@@ -1,0 +1,191 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+body {
+  color: #333;
+  font-family: 'Montserrat';
+
+}
+#logo {
+  background-color:white; 
+  border: 1.2px solid black; 
+  text-shadow: 1.2px 1.2px #363434a6;
+}
+.page-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  padding: 20px;
+}
+/* HEADER */
+
+/* FOOTER */
+
+/* FORMULAIRE */
+
+/* BUTTONS  */
+#authenticationButton {
+  width: 50%;
+  padding: 10px;
+  margin: 15px auto; 
+  display: block;
+  background-color: #b4a7d6;
+  color: white;
+  text-shadow: 1.2px 1.2px #363434a6;
+  border: 0.5px solid hsla(0, 4%, 15%, 0.151);
+  border-radius: 4px;
+  box-shadow: 1.5px 1.5px 1px rgba(0, 0, 0, 0.37);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+#authenticationButton:hover {
+  background-color: #7d6ca8;
+}
+
+.buttonGoogle {
+  background-color: #e06666;
+  border-radius: 25px;
+  width: 50%;
+  color: #f8f2f2;
+  font-weight: bold;
+  padding: 10px;
+  margin: 15px auto; 
+  display: block;
+  /* text-shadow: 1px 1px #918d8d; */
+  text-shadow: 1.2px 1.2px #363434a6;
+  border: 0.4px solid #29262681;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+.buttonGoogle:hover {
+  background-color: #e01818;
+}
+
+/* SEPARATEUR  */
+.separateur {
+  width: 2px; 
+  background-color: #02020275; 
+  height: 50%; 
+  margin: auto 10px; 
+}
+/* CONTAINER FORM */
+.form-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  background-color: #dddddd;
+  border: 2px solid #7660ae;
+  border-radius: 8px;
+
+  padding: 40px;
+  width: 1000px;
+  box-shadow: 1.5px 1.5px 5px rgba(0, 0, 0, 0.404);
+}
+.form-section {
+  padding: 20px;
+  margin: 20px;
+  width: 50%;
+}
+
+/* MAIN PAGE */
+main {
+  text-align: center;
+  padding: 20px;
+  flex: 1;
+
+}
+main p {
+  font-size: 18px;
+  margin: 50px 100px;
+  color: #444;
+}
+.buttons-container {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 20px;
+}
+
+.button-wrapper {
+  display: flex;
+  align-items: flex-start;
+}
+.button {
+  background-color: #b4a7d6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  border: 1px solid black;
+  /* box-shadow: 2px 2px 1.2px black; */
+  text-shadow: 1.2px 1.2px #363434a6;
+  font-weight: bold;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+.button:hover {
+  background-color: #7d6ca8;
+  color: #fff;
+}
+.info-icon {
+  color: #444;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.info-icon:hover {
+  transform: scale(1.2);
+}
+.info-icon:hover::after {
+  content: attr(title);
+  position: absolute;
+  background-color: #fff;
+  color: #333;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  white-space: nowrap;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  margin-left: 10px;
+}
+
+/* PLANNING */
+
+
+/* POMODORO */
+
+
+/* PROFIL  */
+
+
+
+
+
+
+
+
+
+
+/* Responsive  pour plus tard*/
+/* @media (max-width: 768px) {
+  .profile-container {
+      flex-direction: column;
+  }
+
+  .profile-info, .profile-content {
+      max-width: 100%;
+  }
+} */
+

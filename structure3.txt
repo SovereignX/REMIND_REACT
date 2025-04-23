@@ -1,0 +1,102 @@
+.
+├── architecture.txt
+├── backend
+│   ├── api
+│   │   ├── events
+│   │   │   ├── add-event.php
+│   │   │   ├── delete-event.php
+│   │   │   ├── get-events.php
+│   │   │   ├── save-events.php
+│   │   │   └── update-event.php
+│   │   ├── test.php
+│   │   └── users
+│   │       ├── login.php
+│   │       ├── logout.php
+│   │       ├── register.php
+│   │       └── test.php
+│   ├── config
+│   │   ├── cors.php
+│   │   ├── database.php
+│   │   ├── routes.php
+│   │   └── test_connection.php
+│   ├── controllers
+│   │   ├── AuthenticationController.php
+│   │   ├── MainController.php
+│   │   ├── PlanningController.php
+│   │   ├── PomodoroController.php
+│   │   ├── ProfilController.php
+│   │   └── TaskController.php
+│   ├── models
+│   │   ├── AuthenticationModel.php
+│   │   ├── PomodoroModel.php
+│   │   ├── TaskModel.php
+│   │   └── UserModel.php
+│   ├── routes
+│   └── views
+│       ├── authentication.php
+│       ├── footer.php
+│       ├── header.php
+│       ├── main.php
+│       ├── planning.php
+│       ├── pomodoro_old.php
+│       ├── pomodoro.php
+│       ├── profil.php
+│       └── task.php
+├── frontend
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── public
+│   │   ├── icon2.png
+│   │   ├── icon.png
+│   │   └── vite.svg
+│   ├── README.md
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── assets
+│   │   │   └── react.svg
+│   │   ├── common
+│   │   │   ├── Button.jsx
+│   │   │   ├── CircleTimer.jsx
+│   │   │   ├── ErrorMessage.jsx
+│   │   │   ├── InputField.jsx
+│   │   │   └── NavButton.jsx
+│   │   ├── components
+│   │   │   ├── AuthenticationForm.css
+│   │   │   ├── AuthenticationForm.jsx
+│   │   │   ├── FormWrapper.css
+│   │   │   ├── FormWrapper.jsx
+│   │   │   ├── Home.jsx
+│   │   │   ├── Planning.css
+│   │   │   ├── Planning.jsx
+│   │   │   ├── Pomodoro.css
+│   │   │   ├── Pomodoro.jsx
+│   │   │   └── Profile.jsx
+│   │   ├── hooks
+│   │   │   ├── Auth.jsx
+│   │   │   └── TimerPomodoro.jsx
+│   │   ├── index.css
+│   │   ├── layouts
+│   │   │   └── PageLayout.jsx
+│   │   ├── main.jsx
+│   │   ├── styles
+│   │   │   ├── Home.css
+│   │   │   ├── NavButton.css
+│   │   │   └── Profile.css
+│   │   ├── ui
+│   │   │   ├── Footer.css
+│   │   │   ├── Footer.jsx
+│   │   │   ├── Layout.jsx
+│   │   │   ├── Navbar.css
+│   │   │   └── Navbar.jsx
+│   │   └── utils
+│   │       └── constant.js
+│   └── vite.config.js
+├── package.json
+├── package-lock.json
+├── structure2.txt
+└── structure3.txt
+
+21 directories, 79 files

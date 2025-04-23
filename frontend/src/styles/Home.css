@@ -1,0 +1,26 @@
+.home-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .home-title {
+    margin-bottom: 2rem;
+    color: #333;
+  }
+  
+  .home-description {
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    line-height: 1.6;
+    text-align: justify;
+  }
+  
+  .navigation-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+  }

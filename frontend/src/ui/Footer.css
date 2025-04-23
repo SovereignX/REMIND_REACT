@@ -1,0 +1,14 @@
+footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.103);
+    padding: 25px;
+    display: flex;
+    justify-content:space-between; 
+    align-items: center; 
+  }
+  footer ul {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center; 
+    width: 55%; 
+    list-style-type: none; 
+  }

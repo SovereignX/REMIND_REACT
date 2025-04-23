@@ -1,0 +1,64 @@
+.
+├── architecture.txt
+├── backend
+│   ├── api
+│   │   ├── events
+│   │   └── users
+│   ├── config
+│   │   ├── config.php
+│   │   ├── cors.php
+│   │   ├── database.php
+│   │   ├── routes.php
+│   │   └── test_connection.php
+│   ├── controllers
+│   │   ├── AuthenticationController.php
+│   │   ├── MainController.php
+│   │   ├── PlanningController.php
+│   │   ├── PomodoroController.php
+│   │   ├── ProfilController.php
+│   │   └── TaskController.php
+│   ├── models
+│   │   ├── AuthenticationModel.php
+│   │   ├── PomodoroModel.php
+│   │   ├── TaskModel.php
+│   │   └── UserModel.php
+│   ├── routes
+│   └── views
+│       ├── authentication.php
+│       ├── footer.php
+│       ├── header.php
+│       ├── main.php
+│       ├── planning.php
+│       ├── pomodoro_old.php
+│       ├── pomodoro.php
+│       ├── profil.php
+│       └── task.php
+├── frontend
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── public
+│   │   ├── icon2.png
+│   │   ├── icon.png
+│   │   └── vite.svg
+│   ├── README.md
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── assets
+│   │   ├── common
+│   │   ├── components
+│   │   ├── hooks
+│   │   ├── index.css
+│   │   ├── layouts
+│   │   ├── main.jsx
+│   │   ├── styles
+│   │   ├── ui
+│   │   └── utils
+│   └── vite.config.js
+├── package.json
+├── package-lock.json
+└── structure2.txt
+
+21 directories, 41 files
