@@ -1,57 +1,98 @@
 <?php
+/**
+ * API de connexion utilisateur
+ * Exemple d'utilisation correcte du CORS
+ */
+
+// 1. TOUJOURS inclure le CORS en premier
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 
-// Add CORS headers
-addCorsHeaders();
+// 2. Définir le type de contenu
+header("Content-Type: application/json; charset=UTF-8");
 
-header("Content-Type: application/json");
-
-// Sanitize function to clean user input
-function sanitize($data) {
+// 3. Fonction de validation et nettoyage
+function sanitizeInput($data) {
     return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
 }
 
-// Get JSON request data
-$data = json_decode(file_get_contents("php://input"), true);
-
-// Check if email and password are set
-if (!isset($data["email"]) || !isset($data["password"])) {
-    http_response_code(400);
-    echo json_encode(["success" => false, "message" => "Email and password are required"]);
+// 4. Fonction de réponse JSON
+function sendResponse($success, $data = [], $httpCode = 200) {
+    http_response_code($httpCode);
+    echo json_encode(array_merge(['success' => $success], $data));
     exit;
 }
 
-$email = sanitize($data["email"]);
-$password = trim($data["password"]); // No need to sanitize password
+// 5. Récupérer et valider les données
+$json = file_get_contents("php://input");
+$data = json_decode($json, true);
 
+// Vérifier que le JSON est valide
+if (json_last_error() !== JSON_ERROR_NONE) {
+    sendResponse(false, [
+        'message' => 'Données JSON invalides'
+    ], 400);
+}
+
+// Vérifier les champs requis
+if (!isset($data["email"]) || !isset($data["password"])) {
+    sendResponse(false, [
+        'message' => 'Email et mot de passe requis'
+    ], 400);
+}
+
+$email = sanitizeInput($data["email"]);
+$password = trim($data["password"]);
+
+// Validation de l'email
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    sendResponse(false, [
+        'message' => 'Format d\'email invalide'
+    ], 400);
+}
+
+// 6. Traitement de la base de données
 try {
-    // Get database connection
     $db = getConnection();
     
-    // Prepare and execute query to fetch user
-    $req = $db->prepare("SELECT id, email, password, nom, prenom FROM users WHERE email = ?");
-    $req->execute([$email]);
-    $user = $req->fetch(PDO::FETCH_ASSOC);
+    // Requête préparée pour éviter les injections SQL
+    $stmt = $db->prepare(
+        "SELECT id, email, password, nom, prenom 
+         FROM users 
+         WHERE email = :email 
+         LIMIT 1"
+    );
+    $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+    $stmt->execute();
     
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Vérifier l'utilisateur et le mot de passe
     if (!$user || !password_verify($password, $user["password"])) {
-        http_response_code(401);
-        echo json_encode(["success" => false, "message" => "Invalid credentials"]);
-        exit;
+        sendResponse(false, [
+            'message' => 'Email ou mot de passe incorrect'
+        ], 401);
     }
     
-    echo json_encode([
-        "success" => true, 
-        "userId" => $user["id"],
-        "userInfo" => [
-            "email" => $user["email"],
-            "nom" => $user["nom"],
-            "prenom" => $user["prenom"]
+    // Succès - Ne jamais renvoyer le mot de passe
+    unset($user['password']);
+    
+    sendResponse(true, [
+        'message' => 'Connexion réussie',
+        'userId' => $user["id"],
+        'userInfo' => [
+            'email' => $user["email"],
+            'nom' => $user["nom"],
+            'prenom' => $user["prenom"]
         ]
-    ]);
+    ], 200);
     
 } catch(PDOException $e) {
-    http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Database error: " . $e->getMessage()]);
+    // En production, ne pas exposer les détails de l'erreur
+    error_log("Erreur de connexion: " . $e->getMessage());
+    
+    sendResponse(false, [
+        'message' => 'Erreur serveur'
+    ], 500);
 }
 ?>
