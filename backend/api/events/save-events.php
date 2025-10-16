@@ -23,9 +23,13 @@ try {
     $req = $db->prepare("DELETE FROM events");
     $req->execute();
     
-    // Insert all events without specifying ID
-    $req = $db->prepare("INSERT INTO events (day, time, title, color, duration) 
-                          VALUES (:day, :time, :title, :color, :duration)");
+    $req = $db->prepare(
+    "INSERT INTO events (day, time, title, color, duration) 
+     VALUES (:day, :time, :title, :color, :duration)"
+    );
+
+    // Et récupérer l'ID généré :
+    $event['id'] = $db->lastInsertId();
     
     $insertedEvents = [];
     
