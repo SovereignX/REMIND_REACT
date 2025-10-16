@@ -1,51 +1,100 @@
-h1 {
-    text-align: center;
-    margin: 20px 0;
-    color: #444;
-  }
-  
-  .auth-container {
-    display: flex;
-    justify-content: center;
-    padding: 50px;
-  }
-  
-  h2 {
-    text-align: center;
-    color: #292626;
-    text-shadow: 1px 1px #616060;
-    font-size: 4vh;
-  }
-  
-  label {
-    display: block;
-    margin-top: 10px;
-    color: #666;
-    text-shadow: 1px 1px #c0bfbf;
-  }
-  
-  input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  button {
-    background-color: #b4a7d6;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    border: 1px solid black;
-    /* box-shadow: 2px 2px 1.2px black; */
-    text-shadow: 1.2px 1.2px #363434a6;
-    font-weight: bold;
-    padding: 10px 20px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-  }
-  button:hover {
-    background-color: #7d6ca8;
-    color: #fff;
-  }
+.btn {
+  display: inline-block;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  outline: none;
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(180, 167, 214, 0.25);
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Primary button style - purple theme */
+.btn-primary {
+  color: #fff;
+  background-color: #b4a7d6;
+  border-color: #b4a7d6;
+  text-shadow: 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+  background-color: #9c88c1;
+  border-color: #9c88c1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:active {
+  background-color: #8a78ad;
+  border-color: #8a78ad;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Secondary button style */
+.btn-secondary {
+  color: #333;
+  background-color: #f8f9fa;
+  border-color: #ddd;
+}
+
+.btn-secondary:hover {
+  background-color: #e9ecef;
+  border-color: #ccc;
+}
+
+.btn-secondary:active {
+  background-color: #dae0e5;
+  border-color: #bbb;
+}
+
+/* Link button style */
+.btn-link {
+  font-weight: 600;
+  color: #b4a7d6;
+  background-color: transparent;
+  border: none;
+  text-decoration: underline;
+  padding: 0.3rem 0.6rem;
+}
+
+.btn-link:hover {
+  color: #9c88c1;
+  text-decoration: underline;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+/* Special button sizes */
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.2rem;
+  border-radius: 0.3rem;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 0.2rem;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}

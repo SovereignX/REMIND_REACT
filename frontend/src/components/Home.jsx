@@ -28,20 +28,24 @@ const Home = () => {
   return (
     <PageLayout>
       <div className="home-container">
-        <h1 className="home-title">PROJET S.</h1>
+        <h1 className="home-title">RE:MIND</h1>
         <div className="home-description">
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
-            elementum lobortis quam non vestibulum. Aenean tempor blandit diam
-            vitae tristique. Lorem ipsum dolor sit amet, consectetur adipiscing
-            elit. Morbi elementum lobortis quam non vestibulum. Aenean tempor
-            blandit diam vitae tristique.
+            Le timeblocking (Planning) consiste à planifier sa journée en
+            réservant des plages horaires précises à chaque tâche, ce qui permet
+            de mieux organiser son temps et de limiter les distractions. Le
+            timeboxing (Tâches), quant à lui, fixe une durée maximale pour
+            accomplir une tâche donnée, obligeant à rester concentré et à
+            prioriser l’essentiel. Ces deux méthodes aident à évaluer plus
+            justement le temps réellement nécessaire à ses activités. Le
+            Pomodoro, lui, découpe le travail en sessions courtes de 25 minutes
+            suivies de pauses, favorisant la concentration tout en évitant la
+            fatigue mentale. Ces approches complémentaires optimisent la gestion
+            du temps et la productivité.
           </p>
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
-            elementum lobortis quam non vestibulum. Aenean tempor blandit diam
-            vitae tristique. Lorem ipsum dolor sit amet, consectetur adipiscing
-            elit.
+            Grâce à RE:MIND, essayez-les, et découvrez à quel point vos journées
+            peuvent devenir fluides et satisfaisantes !
           </p>
         </div>
 

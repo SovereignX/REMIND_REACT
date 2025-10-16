@@ -69,6 +69,7 @@ export default function AuthenticationForm({ onLogin }) {
               <InputField
                 type="text"
                 name="nom"
+                label="Nom"
                 placeholder="Nom"
                 value={formData.nom}
                 onChange={handleChange}
@@ -77,6 +78,7 @@ export default function AuthenticationForm({ onLogin }) {
               <InputField
                 type="text"
                 name="prenom"
+                label="Prénom"
                 placeholder="Prénom"
                 value={formData.prenom}
                 onChange={handleChange}
@@ -87,6 +89,7 @@ export default function AuthenticationForm({ onLogin }) {
           <InputField
             type="email"
             name="email"
+            label="Adresse mail"
             placeholder="Adresse mail"
             value={formData.email}
             onChange={handleChange}
@@ -98,6 +101,7 @@ export default function AuthenticationForm({ onLogin }) {
           <InputField
             type="password"
             name="password"
+            label="Mot de passe"
             placeholder="Mot de passe"
             value={formData.password}
             onChange={handleChange}
@@ -107,6 +111,7 @@ export default function AuthenticationForm({ onLogin }) {
             <InputField
               type="password"
               name="confirm"
+              label="Confirmation du mot de passe"
               placeholder="Confirmation du mot de passe"
               value={formData.confirm}
               onChange={handleChange}

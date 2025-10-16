@@ -13,6 +13,8 @@ export default function Pomodoro() {
     totalDuration,
     formatTime,
     toggleTimer,
+    soundEnabled,
+    toggleSound,
   } = usePomodoroTimer();
 
   // Calculate percentage completion for circle timer
@@ -29,6 +31,13 @@ export default function Pomodoro() {
 
       <Button className="pomodoro-button" onClick={toggleTimer}>
         {isRunning ? "Pause" : "Démarrer"}
+      </Button>
+      <Button
+        className="sound-toggle-button"
+        onClick={toggleSound}
+        aria-label={soundEnabled ? "Désactiver le son" : "Activer le son"}
+      >
+        {soundEnabled ? "🔊" : "🔇"}
       </Button>
     </div>
   );

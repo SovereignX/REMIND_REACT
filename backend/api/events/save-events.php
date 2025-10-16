@@ -2,7 +2,7 @@
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 
-// Add CORS headers (the function call is already in cors.php, but adding it explicitly won't hurt)
+// Add CORS headers
 addCorsHeaders();
 
 header("Content-Type: application/json");
@@ -23,24 +23,36 @@ try {
     $req = $db->prepare("DELETE FROM events");
     $req->execute();
     
-    // Insert all events
-    $req = $db->prepare("INSERT INTO events (id, day, time, title, color, duration) 
-                          VALUES (:id, :day, :time, :title, :color, :duration)");
+    // Insert all events without specifying ID
+    $req = $db->prepare("INSERT INTO events (day, time, title, color, duration) 
+                          VALUES (:day, :time, :title, :color, :duration)");
+    
+    $insertedEvents = [];
     
     foreach ($data['events'] as $event) {
-        $req->bindParam(':id', $event['id']);
         $req->bindParam(':day', $event['day']);
         $req->bindParam(':time', $event['time']);
         $req->bindParam(':title', $event['title']);
         $req->bindParam(':color', $event['color']);
         $req->bindParam(':duration', $event['duration']);
         $req->execute();
+        
+        // Get the ID that was automatically generated
+        $newId = $db->lastInsertId();
+        
+        // Store the event with its new ID
+        $event['id'] = $newId;
+        $insertedEvents[] = $event;
     }
     
     // Commit the transaction
     $db->commit();
     
-    echo json_encode(["success" => true]);
+    // Return the events with their new IDs
+    echo json_encode([
+        "success" => true,
+        "events" => $insertedEvents
+    ]);
 } catch(PDOException $e) {
     // Roll back on error
     $db->rollBack();

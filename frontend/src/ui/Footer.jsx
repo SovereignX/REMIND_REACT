@@ -6,7 +6,7 @@ const Footer = () => {
 
   return (
     <footer>
-      <p>&copy; 2025 Projet S</p>
+      <p>&copy; 2025 RE:MIND</p>
       <ul>
         <li>
           <a onClick={() => navigate("/")}>Mentions Légales</a>

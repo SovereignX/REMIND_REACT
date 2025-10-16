@@ -64,7 +64,7 @@ export function usePomodoroTimer() {
     }
   }, [cycle, phase]);
 
-  // Format time as MM:SS
+  // Format time as MM:SS (Minutes:Seconds)
   const formatTime = useCallback((seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;

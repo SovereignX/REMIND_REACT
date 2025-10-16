@@ -9,7 +9,7 @@ const Navbar = () => {
       <nav>
         <ul>
           <li className="logo">
-            <a onClick={() => navigate("/")}>PROJET S.</a>
+            <a onClick={() => navigate("/")}>RE:MIND</a>
           </li>
           <li>
             <a onClick={() => navigate("/connexion")}>

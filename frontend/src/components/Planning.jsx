@@ -67,7 +67,10 @@ const PlanningInteractif = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ events }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        console.log("Response status:", res.status);
+        return res.json();
+      })
       .then((data) => {
         if (data.success) {
           alert("Planning sauvegardé avec succès!");
@@ -75,7 +78,10 @@ const PlanningInteractif = () => {
           alert("Erreur: " + (data.error || "Impossible de sauvegarder"));
         }
       })
-      .catch((err) => console.error("Erreur de sauvegarde:", err));
+      .catch((err) => {
+        console.error("Erreur complète:", err);
+        alert("Erreur de sauvegarde: " + err.message);
+      });
   };
 
   const loadAllEvents = () => {
