@@ -1,0 +1,344 @@
+/* ============================================
+   VARIABLES CSS - Thème du site
+   ============================================ */
+:root {
+  --primary-color: #936e9e;
+  --primary-hover: #8272ac;
+  --secondary-color: #b4a7d6;
+  --accent-color: #7d6ca8;
+  --danger-color: #e06666;
+  --danger-hover: #e01818;
+  --success-color: #4caf50;
+  
+  --text-dark: #333;
+  --text-light: #666;
+  --bg-light: #f8f9fa;
+  --bg-lighter: #fafafa;
+  --border-color: #ddd;
+  
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 1.5px 1.5px 5px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  --border-radius: 8px;
+  --transition: all 0.3s ease;
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  color: var(--text-dark);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   LAYOUT RESPONSIVE
+   ============================================ */
+.page-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .page-container {
+    padding: 2rem;
+  }
+}
+
+/* ============================================
+   NAVIGATION RESPONSIVE
+   ============================================ */
+nav {
+  background-color: var(--primary-color);
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  nav {
+    padding: 1.5rem 2rem;
+  }
+  
+  nav ul {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+/* ============================================
+   BUTTONS RESPONSIVE
+   ============================================ */
+.btn,
+.button,
+.nav-button,
+.pomodoro-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary,
+.button {
+  background-color: var(--secondary-color);
+  color: white;
+  text-shadow: 1px 1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover,
+.button:hover {
+  background-color: var(--accent-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 767px) {
+  .btn,
+  .button {
+    width: 100%;
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* ============================================
+   FORMS RESPONSIVE
+   ============================================ */
+.form-wrapper {
+  width: 100%;
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: white;
+  border: 2px solid var(--primary-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+}
+
+@media (min-width: 768px) {
+  .form-wrapper {
+    padding: 2.5rem;
+  }
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.input-field,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.3s;
+}
+
+.input-field:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(147, 110, 158, 0.1);
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+/* ============================================
+   GRID LAYOUTS RESPONSIVE
+   ============================================ */
+.navigation-container,
+.buttons-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+@media (min-width: 768px) {
+  .navigation-container,
+  .buttons-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .navigation-container,
+  .buttons-container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* ============================================
+   PLANNING RESPONSIVE
+   ============================================ */
+.planning {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.planning-row {
+  display: flex;
+  min-height: 40px;
+}
+
+.planning-time-label {
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .planning-time-label {
+    min-width: 80px;
+  }
+}
+
+/* ============================================
+   MODAL RESPONSIVE
+   ============================================ */
+.modal {
+  width: 90%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .modal {
+    padding: 2rem;
+  }
+}
+
+/* ============================================
+   FOOTER RESPONSIVE
+   ============================================ */
+footer {
+  margin-top: auto;
+  padding: 1rem;
+  background-color: var(--bg-lighter);
+  border-top: 1px solid var(--border-color);
+}
+
+footer ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  footer {
+    padding: 1.5rem 2rem;
+  }
+  
+  footer ul {
+    flex-direction: row;
+    justify-content: center;
+    gap: 2rem;
+  }
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+
+.error-message {
+  color: var(--danger-color);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.success-message {
+  color: var(--success-color);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
