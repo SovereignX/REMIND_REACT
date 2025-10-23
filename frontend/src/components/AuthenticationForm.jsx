@@ -1,11 +1,14 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useAuth } from "../hooks/Auth";
 import "./AuthenticationForm.css";
 
 export default function AuthenticationForm({ onLogin }) {
-  const [mode, setMode] = useState("login");
+  const [searchParams] = useSearchParams();
+  const initialMode = searchParams.get("mode") === "register" ? "register" : "login";
+  
+  const [mode, setMode] = useState(initialMode);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -18,10 +21,18 @@ export default function AuthenticationForm({ onLogin }) {
   const navigate = useNavigate();
   const { login, register } = useAuth();
 
+  // Mettre à jour le mode si l'URL change
+  useEffect(() => {
+    const urlMode = searchParams.get("mode");
+    if (urlMode === "register" || urlMode === "login") {
+      setMode(urlMode);
+      setErrors({});
+    }
+  }, [searchParams]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -30,21 +41,18 @@ export default function AuthenticationForm({ onLogin }) {
   const validateForm = () => {
     const newErrors = {};
 
-    // Email validation
     if (!formData.email.trim()) {
       newErrors.email = "L'email est requis";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Format d'email invalide";
     }
 
-    // Password validation
     if (!formData.password) {
       newErrors.password = "Le mot de passe est requis";
     } else if (mode === "register" && formData.password.length < 8) {
       newErrors.password = "Le mot de passe doit contenir au moins 8 caractères";
     }
 
-    // Register-specific validations
     if (mode === "register") {
       if (!formData.nom.trim()) {
         newErrors.nom = "Le nom est requis";
@@ -90,8 +98,8 @@ export default function AuthenticationForm({ onLogin }) {
   };
 
   const toggleMode = () => {
-    setMode(mode === "login" ? "register" : "login");
-    setErrors({});
+    const newMode = mode === "login" ? "register" : "login";
+    navigate(`/connexion?mode=${newMode}`);
   };
 
   return (
@@ -109,7 +117,6 @@ export default function AuthenticationForm({ onLogin }) {
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
-          {/* Register fields */}
           {mode === "register" && (
             <div className="form-row">
               <div className="input-group">
@@ -152,7 +159,6 @@ export default function AuthenticationForm({ onLogin }) {
             </div>
           )}
 
-          {/* Email field */}
           <div className="input-group">
             <label htmlFor="email" className="input-label">
               Email <span className="required">*</span>
@@ -166,13 +172,13 @@ export default function AuthenticationForm({ onLogin }) {
               onChange={handleChange}
               className={errors.email ? "input-error" : ""}
               disabled={isLoading}
+              autoComplete="email"
             />
             {errors.email && (
               <span className="error-message">{errors.email}</span>
             )}
           </div>
 
-          {/* Password field */}
           <div className="input-group">
             <label htmlFor="password" className="input-label">
               Mot de passe <span className="required">*</span>
@@ -186,13 +192,13 @@ export default function AuthenticationForm({ onLogin }) {
               onChange={handleChange}
               className={errors.password ? "input-error" : ""}
               disabled={isLoading}
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
             />
             {errors.password && (
               <span className="error-message">{errors.password}</span>
             )}
           </div>
 
-          {/* Confirm password (register only) */}
           {mode === "register" && (
             <div className="input-group">
               <label htmlFor="confirm" className="input-label">
@@ -207,6 +213,7 @@ export default function AuthenticationForm({ onLogin }) {
                 onChange={handleChange}
                 className={errors.confirm ? "input-error" : ""}
                 disabled={isLoading}
+                autoComplete="new-password"
               />
               {errors.confirm && (
                 <span className="error-message">{errors.confirm}</span>
@@ -214,14 +221,12 @@ export default function AuthenticationForm({ onLogin }) {
             </div>
           )}
 
-          {/* General error */}
           {errors.general && (
             <div className="error-message general-error">
               {errors.general}
             </div>
           )}
 
-          {/* Submit button */}
           <button
             type="submit"
             className="auth-submit-btn"
@@ -234,7 +239,6 @@ export default function AuthenticationForm({ onLogin }) {
               : "Créer mon compte"}
           </button>
 
-          {/* Toggle mode */}
           <div className="auth-toggle">
             {mode === "login" ? (
               <p>
