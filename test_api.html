@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Events</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #b4a7d6;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #b4a7d6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #9a8bc5;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            border-left: 4px solid #28a745;
+        }
+        .error {
+            border-left: 4px solid #dc3545;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test API Events - REMIND</h1>
+    
+    <div class="container">
+        <h2>📋 Status de connexion</h2>
+        <p>Pour tester les APIs, vous devez d'abord être connecté.</p>
+        <p><strong>Email de test:</strong> test@example.com</p>
+        <p><strong>Mot de passe:</strong> test1234</p>
+        <button onclick="window.location.href='/backend/api/users/login.php'">Aller à la page de connexion</button>
+    </div>
+
+    <div class="container">
+        <h2>1️⃣ Récupérer tous les événements (GET)</h2>
+        <button onclick="getEvents()">GET /api/events/get-events.php</button>
+        <button onclick="getEventsByDay('Lundi')">GET avec filtre jour=Lundi</button>
+        <div id="result-get" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>2️⃣ Ajouter un événement (POST)</h2>
+        <div class="form-group">
+            <label>Jour:</label>
+            <select id="add-day">
+                <option>Lundi</option>
+                <option>Mardi</option>
+                <option>Mercredi</option>
+                <option>Jeudi</option>
+                <option>Vendredi</option>
+                <option>Samedi</option>
+                <option>Dimanche</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Heure:</label>
+            <input type="time" id="add-time" value="09:00">
+        </div>
+        <div class="form-group">
+            <label>Titre:</label>
+            <input type="text" id="add-title" value="Nouvelle tâche" style="width: 300px;">
+        </div>
+        <div class="form-group">
+            <label>Couleur:</label>
+            <input type="color" id="add-color" value="#b4a7d6">
+        </div>
+        <div class="form-group">
+            <label>Durée (h):</label>
+            <input type="number" id="add-duration" value="1.5" step="0.5" min="0.5">
+        </div>
+        <button onclick="addEvent()">Ajouter l'événement</button>
+        <div id="result-add" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>3️⃣ Mettre à jour un événement (PUT)</h2>
+        <div class="form-group">
+            <label>ID Event:</label>
+            <input type="number" id="update-id" value="1" min="1">
+        </div>
+        <div class="form-group">
+            <label>Nouveau titre:</label>
+            <input type="text" id="update-title" value="Titre modifié" style="width: 300px;">
+        </div>
+        <button onclick="updateEvent()">Mettre à jour</button>
+        <div id="result-update" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>4️⃣ Supprimer un événement (DELETE)</h2>
+        <div class="form-group">
+            <label>ID Event:</label>
+            <input type="number" id="delete-id" value="1" min="1">
+        </div>
+        <button onclick="deleteEvent()">Supprimer</button>
+        <div id="result-delete" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>5️⃣ Sauvegarder un planning complet (POST)</h2>
+        <p>⚠️ Cette action remplace tous vos événements existants !</p>
+        <button onclick="saveFullPlanning()">Sauvegarder planning de test</button>
+        <div id="result-save" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = '/backend/api/events';
+
+        // Fonction helper pour afficher les résultats
+        function displayResult(elementId, data, success = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+            element.className = success ? 'result success' : 'result error';
+        }
+
+        // 1. GET - Récupérer tous les événements
+        async function getEvents() {
+            try {
+                const response = await fetch(`${API_BASE}/get-events.php`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                displayResult('result-get', data, data.success);
+            } catch (error) {
+                displayResult('result-get', { error: error.message }, false);
+            }
+        }
+
+        // GET avec filtre jour
+        async function getEventsByDay(day) {
+            try {
+                const response = await fetch(`${API_BASE}/get-events.php?day=${day}`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                displayResult('result-get', data, data.success);
+            } catch (error) {
+                displayResult('result-get', { error: error.message }, false);
+            }
+        }
+
+        // 2. POST - Ajouter un événement
+        async function addEvent() {
+            const eventData = {
+                day: document.getElementById('add-day').value,
+                time: document.getElementById('add-time').value,
+                title: document.getElementById('add-title').value,
+                color: document.getElementById('add-color').value,
+                duration: parseFloat(document.getElementById('add-duration').value)
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/add-event.php`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(eventData)
+                });
+                const data = await response.json();
+                displayResult('result-add', data, data.success);
+            } catch (error) {
+                displayResult('result-add', { error: error.message }, false);
+            }
+        }
+
+        // 3. PUT - Mettre à jour un événement
+        async function updateEvent() {
+            const updateData = {
+                id: parseInt(document.getElementById('update-id').value),
+                title: document.getElementById('update-title').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/update-event.php`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                const data = await response.json();
+                displayResult('result-update', data, data.success);
+            } catch (error) {
+                displayResult('result-update', { error: error.message }, false);
+            }
+        }
+
+        // 4. DELETE - Supprimer un événement
+        async function deleteEvent() {
+            const deleteData = {
+                id: parseInt(document.getElementById('delete-id').value)
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/delete-event.php`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(deleteData)
+                });
+                const data = await response.json();
+                displayResult('result-delete', data, data.success);
+            } catch (error) {
+                displayResult('result-delete', { error: error.message }, false);
+            }
+        }
+
+        // 5. POST - Sauvegarder un planning complet
+        async function saveFullPlanning() {
+            const planningData = {
+                events: [
+                    {
+                        day: 'Lundi',
+                        time: '09:00',
+                        title: 'Réunion matinale',
+                        color: '#b4a7d6',
+                        duration: 1.0
+                    },
+                    {
+                        day: 'Lundi',
+                        time: '14:00',
+                        title: 'Développement',
+                        color: '#a7d6b4',
+                        duration: 3.0
+                    },
+                    {
+                        day: 'Mardi',
+                        time: '10:00',
+                        title: 'Formation',
+                        color: '#d6b4a7',
+                        duration: 2.0
+                    }
+                ]
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/save-events.php`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(planningData)
+                });
+                const data = await response.json();
+                displayResult('result-save', data, data.success);
+            } catch (error) {
+                displayResult('result-save', { error: error.message }, false);
+            }
+        }
+
+        // Charger les événements au chargement de la page
+        window.onload = function() {
+            getEvents();
+        };
+    </script>
+</body>
+</html>
