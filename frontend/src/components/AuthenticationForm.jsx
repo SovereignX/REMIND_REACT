@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import PropTypes from "prop-types";
-import { useAuth } from "../hooks/Auth";
+import { useAuth } from "../context/AuthContext";
 import "./AuthenticationForm.css";
 
-export default function AuthenticationForm({ onLogin }) {
+export default function AuthenticationForm() {
   const [searchParams] = useSearchParams();
   const initialMode = searchParams.get("mode") === "register" ? "register" : "login";
   
@@ -19,7 +18,14 @@ export default function AuthenticationForm({ onLogin }) {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const { login, register, isAuthenticated } = useAuth();
+
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
 
   // Mettre à jour le mode si l'URL change
   useEffect(() => {
@@ -84,7 +90,6 @@ export default function AuthenticationForm({ onLogin }) {
           : await register(formData);
 
       if (data.success) {
-        onLogin?.(data.userInfo || data.user);
         navigate("/");
       } else {
         setErrors({ general: data.message || "Une erreur est survenue" });
@@ -271,7 +276,3 @@ export default function AuthenticationForm({ onLogin }) {
     </div>
   );
 }
-
-AuthenticationForm.propTypes = {
-  onLogin: PropTypes.func,
-};

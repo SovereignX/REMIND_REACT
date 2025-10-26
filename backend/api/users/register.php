@@ -1,11 +1,12 @@
 <?php
 /**
  * API d'inscription utilisateur
- * Crée un nouveau compte utilisateur dans la base de données
+ * POST /backend/api/users/register.php
  */
 
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
+require_once '../../config/session.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -102,11 +103,19 @@ try {
     
     $userId = $db->lastInsertId();
     
+    // Créer la session automatiquement
+    setAuthUser($userId, [
+        'email' => $email,
+        'nom' => $nom,
+        'prenom' => $prenom
+    ]);
+    
     // Succès - Renvoyer les infos utilisateur (sans le mot de passe)
     sendResponse(true, [
         'message' => 'Inscription réussie',
-        'userId' => $userId,
-        'userInfo' => [
+        'userId' => (int)$userId,
+        'user' => [
+            'id' => (int)$userId,
             'email' => $email,
             'nom' => $nom,
             'prenom' => $prenom
@@ -117,4 +126,3 @@ try {
     error_log("Erreur d'inscription: " . $e->getMessage());
     sendResponse(false, ['message' => 'Erreur serveur'], 500);
 }
-?>

@@ -1,14 +1,11 @@
-// import { useEffect, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import AuthForm from "./components/AuthenticationForm";
 import Home from "./components/Home";
 import Pomodoro from "./components/Pomodoro";
 import Layout from "./ui/Layout";
 import Planning from "./components/Planning";
 import Profile from "./components/Profile";
-// import Profile from './components/Profile';
-// import Pomodoro from './components/Pomodoro';
-// import TaskList from './components/TaskList';
 
 export default function App() {
   const router = createBrowserRouter([
@@ -25,5 +22,9 @@ export default function App() {
     },
   ]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }

@@ -1,31 +1,24 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Layout() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, logout, loading } = useAuth();
 
-  useEffect(() => {
-    fetch("/php/getProfile.php")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setUser(data.user);
-      });
-  }, []);
-
-  const handleLogout = async () => {
-    await fetch("/php/logout.php");
-    setUser(null);
-    navigate("/connexion");
-  };
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: "2rem" }}>
+        Chargement...
+      </div>
+    );
+  }
 
   return (
     <>
-      <Navbar user={user} onLogout={handleLogout} />
+      <Navbar user={user} onLogout={logout} />
       <main>
-        <Outlet context={{ user, setUser }} />
+        <Outlet />
       </main>
       <Footer />
     </>

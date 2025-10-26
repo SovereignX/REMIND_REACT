@@ -1,11 +1,9 @@
-
 //? Utilitaires pour les appels API
 //? Gestion centralisée des requêtes et des erreurs
 
-
 // Configuration de base
 const config = {
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/backend/api",
+  baseURL: "http://localhost:8000/backend/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -33,7 +31,7 @@ export async function apiRequest(endpoint, options = {}) {
   
   const defaultOptions = {
     headers: config.headers,
-    credentials: "include", // Pour les cookies/sessions
+    credentials: "include", // Important pour les sessions PHP
   };
 
   const mergedOptions = {
@@ -93,9 +91,7 @@ export async function apiRequest(endpoint, options = {}) {
   }
 }
 
-
-//  Requête GET
-
+// Requête GET
 export async function get(endpoint, params = {}) {
   const queryString = new URLSearchParams(params).toString();
   const url = queryString ? `${endpoint}?${queryString}` : endpoint;
@@ -105,9 +101,7 @@ export async function get(endpoint, params = {}) {
   });
 }
 
-
 // Requête POST
-
 export async function post(endpoint, data = {}) {
   return apiRequest(endpoint, {
     method: "POST",
@@ -115,9 +109,7 @@ export async function post(endpoint, data = {}) {
   });
 }
 
-
 // Requête PUT
-
 export async function put(endpoint, data = {}) {
   return apiRequest(endpoint, {
     method: "PUT",
@@ -125,9 +117,7 @@ export async function put(endpoint, data = {}) {
   });
 }
 
-
 // Requête DELETE
-
 export async function del(endpoint, data = {}) {
   return apiRequest(endpoint, {
     method: "DELETE",
@@ -135,9 +125,7 @@ export async function del(endpoint, data = {}) {
   });
 }
 
-
- // Hook personnalisé pour gérer les erreurs
-
+// Hook personnalisé pour gérer les erreurs
 export function getErrorMessage(error) {
   if (error instanceof APIError) {
     // Messages d'erreur personnalisés selon le code HTTP
@@ -166,14 +154,13 @@ export function getErrorMessage(error) {
   return "Erreur inconnue";
 }
 
-
- // API Endpoints
-
+// API Endpoints
 export const endpoints = {
   auth: {
     login: "/users/login.php",
     register: "/users/register.php",
     logout: "/users/logout.php",
+    profile: "/users/profile.php",
   },
   events: {
     getAll: "/events/get-events.php",
@@ -184,9 +171,7 @@ export const endpoints = {
   },
 };
 
-
 // Fonctions spécifiques pour l'authentification
-
 export const authAPI = {
   async login(email, password) {
     return post(endpoints.auth.login, { email, password });
@@ -199,11 +184,13 @@ export const authAPI = {
   async logout() {
     return post(endpoints.auth.logout);
   },
+
+  async getProfile() {
+    return get(endpoints.auth.profile);
+  },
 };
 
-
 // Fonctions spécifiques pour les événements
-
 export const eventsAPI = {
   async getAll() {
     return get(endpoints.events.getAll);
@@ -226,9 +213,7 @@ export const eventsAPI = {
   },
 };
 
-
 // Validation côté client
-
 export const validators = {
   email(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -1,11 +1,12 @@
 <?php
 /**
  * API de connexion utilisateur
- * Authentifie un utilisateur et retourne ses informations
+ * POST /backend/api/users/login.php
  */
 
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
+require_once '../../config/session.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -63,13 +64,21 @@ try {
         sendResponse(false, ['message' => 'Email ou mot de passe incorrect'], 401);
     }
     
+    // Créer la session
+    setAuthUser($user["id"], [
+        'email' => $user["email"],
+        'nom' => $user["nom"],
+        'prenom' => $user["prenom"]
+    ]);
+    
     // Succès - Ne jamais renvoyer le mot de passe
     unset($user['password']);
     
     sendResponse(true, [
         'message' => 'Connexion réussie',
-        'userId' => $user["id"],
-        'userInfo' => [
+        'userId' => (int)$user["id"],
+        'user' => [
+            'id' => (int)$user["id"],
             'email' => $user["email"],
             'nom' => $user["nom"],
             'prenom' => $user["prenom"]
@@ -80,4 +89,3 @@ try {
     error_log("Erreur de connexion: " . $e->getMessage());
     sendResponse(false, ['message' => 'Erreur serveur'], 500);
 }
-?>
