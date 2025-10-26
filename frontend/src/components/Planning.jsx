@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./Planning.css";
-import { API_URL } from "../utils/constant";
+import { eventsAPI } from "../utils/apiUtils";
 
 const days = [
   "Lundi",
@@ -53,45 +53,38 @@ const PlanningInteractif = () => {
 
   // 🔁 Load events on mount
   useEffect(() => {
-    fetch(`${API_URL}/get-events.php`)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setEvents(data); // Add this to actually set the events
-      })
-      .catch((error) => console.error("Error:", error));
+    eventsAPI.getAll().then(data => {
+      if (data.success) {
+        console.log(data.events);
+        setEvents(data.events);
+      }
+    }).catch((error) => console.error("Error:", error));
   }, []);
-  const saveAllEvents = () => {
-    fetch(`${API_URL}/save-events.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ events }),
-    })
-      .then((res) => {
-        console.log("Response status:", res.status);
-        return res.json();
-      })
-      .then((data) => {
-        if (data.success) {
-          alert("Planning sauvegardé avec succès!");
-        } else {
-          alert("Erreur: " + (data.error || "Impossible de sauvegarder"));
-        }
-      })
-      .catch((err) => {
-        console.error("Erreur complète:", err);
-        alert("Erreur de sauvegarde: " + err.message);
-      });
+
+  const saveAllEvents = async () => {
+    try {
+      const data = await eventsAPI.saveAll(events);
+      if (data.success) {
+        alert("Planning sauvegardé avec succès!");
+      } else {
+        alert("Erreur: " + (data.error || "Impossible de sauvegarder"));
+      }
+    } catch (err) {
+      console.error("Erreur complète:", err);
+      alert("Erreur de sauvegarde: " + err.message);
+    }
   };
 
-  const loadAllEvents = () => {
-    fetch(`${API_URL}/get-events.php`)
-      .then((res) => res.json())
-      .then((data) => {
-        setEvents(data);
+  const loadAllEvents = async () => {
+    try {
+      const data = await eventsAPI.getAll();
+      if (data.success) {
+        setEvents(data.events);
         alert("Planning chargé avec succès!");
-      })
-      .catch((err) => console.error("Erreur de chargement:", err));
+      }
+    } catch (err) {
+      console.error("Erreur de chargement:", err);
+    }
   };
 
   const openModal = (day, hour) => {
@@ -104,7 +97,7 @@ const PlanningInteractif = () => {
 
   const closeModal = () => setModalData({ show: false, day: null, hour: null });
 
-  const createEvent = () => {
+  const createEvent = async () => {
     if (!tempTitle.trim()) {
       setTitleError(true);
       return;
@@ -124,13 +117,7 @@ const PlanningInteractif = () => {
     };
 
     setEvents([...events, newEvent]);
-
-    fetch(`${API_URL}/add-event.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newEvent),
-    });
-
+    await eventsAPI.add(newEvent);
     closeModal();
   };
 
@@ -150,16 +137,10 @@ const PlanningInteractif = () => {
     }));
   };
 
-  const removeEvent = () => {
+  const removeEvent = async () => {
     const id = editModalData.event.id;
     setEvents(events.filter((e) => e.id !== id));
-
-    fetch(`${API_URL}/delete-event.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
-
+    await eventsAPI.delete(id);
     closeEditModal();
   };
 
@@ -167,7 +148,7 @@ const PlanningInteractif = () => {
     e.dataTransfer.setData("eventId", eventId);
   };
 
-  const handleDrop = (e, dayIndex, hourIndex) => {
+  const handleDrop = async (e, dayIndex, hourIndex) => {
     e.preventDefault();
     const eventId = parseInt(e.dataTransfer.getData("eventId"));
 
@@ -179,15 +160,11 @@ const PlanningInteractif = () => {
 
     const updated = events.find((e) => e.id === eventId);
     if (updated) {
-      fetch(`${API_URL}/update-event.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: updated.id,
-          day: dayIndex,
-          time: hourIndex,
-          duration: updated.duration,
-        }),
+      await eventsAPI.update({
+        id: updated.id,
+        day: dayIndex,
+        time: hourIndex,
+        duration: updated.duration,
       });
     }
   };
@@ -200,7 +177,7 @@ const PlanningInteractif = () => {
     document.addEventListener("mouseup", handleResizeEnd);
   };
 
-  const handleResizeMove = (e) => {
+  const handleResizeMove = async (e) => {
     const { eventId, startY } = resizeRef.current;
     const deltaY = e.clientY - startY;
     const steps = Math.round(deltaY / 40);
@@ -215,15 +192,11 @@ const PlanningInteractif = () => {
             Math.min(ev.duration + steps, maxSteps)
           );
 
-          fetch(`${API_URL}/update-event.php`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              id: ev.id,
-              day: ev.day,
-              time: ev.time,
-              duration: newDuration,
-            }),
+          eventsAPI.update({
+            id: ev.id,
+            day: ev.day,
+            time: ev.time,
+            duration: newDuration,
           });
 
           return { ...ev, duration: newDuration };
@@ -424,15 +397,11 @@ const PlanningInteractif = () => {
                 const clamped = Math.min(Number(e.target.value), maxSteps);
                 updateEventField("duration", clamped);
 
-                fetch(`${API_URL}/update-event.php`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    id: editModalData.event.id,
-                    day: editModalData.event.day,
-                    time: editModalData.event.time,
-                    duration: clamped,
-                  }),
+                eventsAPI.update({
+                  id: editModalData.event.id,
+                  day: editModalData.event.day,
+                  time: editModalData.event.time,
+                  duration: clamped,
                 });
               }}
             >

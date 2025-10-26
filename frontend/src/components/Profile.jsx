@@ -1,50 +1,37 @@
-import PropTypes from "prop-types";
-import Button from "../common/Button";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import "../styles/Profile.css";
 
-const Profile = ({ user, onModify, onDelete, error }) => {
+const Profile = () => {
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/connexion?mode=login");
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (!user) {
+    return <div>Chargement...</div>;
+  }
+
   return (
     <div className="profile-container">
       <div className="profile-info">
-        <p>
-          <strong>Nom :</strong> {user?.nom || "Non renseigné"}
-        </p>
-        <p>
-          <strong>Prénom :</strong> {user?.prenom || "Non renseigné"}
-        </p>
-        <p>
-          <strong>Email :</strong> {user?.email || "Non renseigné"}
-        </p>
-
-        <Button className="modify-button" onClick={onModify} variant="primary">
-          Modifier
-        </Button>
-
-        <Button className="delete-button" onClick={onDelete} variant="danger">
-          Supprimer le compte
-        </Button>
+        <h1>Mon Profil</h1>
+        <p><strong>Prénom :</strong> {user.prenom}</p>
+        <p><strong>Nom :</strong> {user.nom}</p>
+        <p><strong>Email :</strong> {user.email}</p>
+        <p><strong>Membre depuis :</strong> {new Date(user.created_at).toLocaleDateString()}</p>
       </div>
-
       <div className="profile-content">
-        <h1>Placeholder Planning</h1>
-
-        {error && <p className="error-messages">{error}</p>}
+        <h2>Vos statistiques</h2>
+        <p>À venir...</p>
       </div>
     </div>
   );
-};
-
-Profile.propTypes = {
-  user: PropTypes.shape({
-    pseudo: PropTypes.string,
-    nom: PropTypes.string,
-    prenom: PropTypes.string,
-    email: PropTypes.string,
-    photo: PropTypes.string,
-  }),
-  onModify: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  error: PropTypes.string,
 };
 
 export default Profile;
