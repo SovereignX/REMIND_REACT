@@ -2,11 +2,12 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import PageLayout from "../layouts/PageLayout";
 import NavButton from "../common/NavButton";
+import { Calendar, Hourglass, ClipboardCheck } from "lucide-react";
 import "../styles/Home.css";
 
 const navigationOptions = [
   {
-    label: "Planning",
+    label: "Planning ",
     path: "/planning",
     description: "Accédez à votre planning hebdomadaire",
   },

@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Eye, EyeOff } from "lucide-react";
 import "./AuthenticationForm.css";
 
 export default function AuthenticationForm() {
   const [searchParams] = useSearchParams();
-  const initialMode = searchParams.get("mode") === "register" ? "register" : "login";
-  
+  const initialMode =
+    searchParams.get("mode") === "register" ? "register" : "login";
+
   const [mode, setMode] = useState(initialMode);
   const [formData, setFormData] = useState({
     email: "",
@@ -17,6 +19,11 @@ export default function AuthenticationForm() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // États pour la visibilité des mots de passe
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const navigate = useNavigate();
   const { login, register, isAuthenticated } = useAuth();
 
@@ -33,6 +40,9 @@ export default function AuthenticationForm() {
     if (urlMode === "register" || urlMode === "login") {
       setMode(urlMode);
       setErrors({});
+      // Réinitialiser la visibilité des mots de passe lors du changement de mode
+      setShowPassword(false);
+      setShowConfirm(false);
     }
   }, [searchParams]);
 
@@ -56,7 +66,8 @@ export default function AuthenticationForm() {
     if (!formData.password) {
       newErrors.password = "Le mot de passe est requis";
     } else if (mode === "register" && formData.password.length < 8) {
-      newErrors.password = "Le mot de passe doit contenir au moins 8 caractères";
+      newErrors.password =
+        "Le mot de passe doit contenir au moins 8 caractères";
     }
 
     if (mode === "register") {
@@ -77,7 +88,7 @@ export default function AuthenticationForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -111,9 +122,7 @@ export default function AuthenticationForm() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>
-            {mode === "login" ? "Connexion" : "Créer un compte"}
-          </h1>
+          <h1>{mode === "login" ? "Connexion" : "Créer un compte"}</h1>
           <p className="auth-subtitle">
             {mode === "login"
               ? "Connectez-vous pour accéder à votre espace"
@@ -188,17 +197,34 @@ export default function AuthenticationForm() {
             <label htmlFor="password" className="input-label">
               Mot de passe <span className="required">*</span>
             </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              className={errors.password ? "input-error" : ""}
-              disabled={isLoading}
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleChange}
+                className={errors.password ? "input-error" : ""}
+                disabled={isLoading}
+                autoComplete={
+                  mode === "login" ? "current-password" : "new-password"
+                }
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isLoading}
+                aria-label={
+                  showPassword
+                    ? "Masquer le mot de passe"
+                    : "Afficher le mot de passe"
+                }
+              >
+                {showPassword ? <EyeOff /> : <Eye />}
+              </button>
+            </div>
             {errors.password && (
               <span className="error-message">{errors.password}</span>
             )}
@@ -209,17 +235,32 @@ export default function AuthenticationForm() {
               <label htmlFor="confirm" className="input-label">
                 Confirmer le mot de passe <span className="required">*</span>
               </label>
-              <input
-                type="password"
-                id="confirm"
-                name="confirm"
-                placeholder="••••••••"
-                value={formData.confirm}
-                onChange={handleChange}
-                className={errors.confirm ? "input-error" : ""}
-                disabled={isLoading}
-                autoComplete="new-password"
-              />
+              <div className="password-input-wrapper">
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  id="confirm"
+                  name="confirm"
+                  placeholder="••••••••"
+                  value={formData.confirm}
+                  onChange={handleChange}
+                  className={errors.confirm ? "input-error" : ""}
+                  disabled={isLoading}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  disabled={isLoading}
+                  aria-label={
+                    showConfirm
+                      ? "Masquer le mot de passe"
+                      : "Afficher le mot de passe"
+                  }
+                >
+                  {showConfirm ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
               {errors.confirm && (
                 <span className="error-message">{errors.confirm}</span>
               )}
@@ -227,9 +268,7 @@ export default function AuthenticationForm() {
           )}
 
           {errors.general && (
-            <div className="error-message general-error">
-              {errors.general}
-            </div>
+            <div className="error-message general-error">{errors.general}</div>
           )}
 
           <button

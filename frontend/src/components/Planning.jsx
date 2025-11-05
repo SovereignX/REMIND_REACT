@@ -51,21 +51,37 @@ const PlanningInteractif = () => {
   const [titleError, setTitleError] = useState(false);
   const resizeRef = useRef(null);
 
+  // Fonction helper pour convertir le nom du jour en index
+  const getDayIndex = (dayName) => {
+    return days.indexOf(dayName);
+  };
+
+  // Fonction helper pour convertir l'heure en index
+  const getTimeIndex = (timeStr) => {
+    return hours.indexOf(timeStr);
+  };
+
   // 🔁 Load events on mount
   useEffect(() => {
-    eventsAPI.getAll().then(data => {
-      if (data.success) {
-        console.log(data.events);
-        setEvents(data.events);
-      }
-    }).catch((error) => console.error("Error:", error));
+    loadAllEvents();
   }, []);
 
   const saveAllEvents = async () => {
     try {
-      const data = await eventsAPI.saveAll(events);
+      // Convertir les événements pour l'API (index → noms)
+      const eventsForAPI = events.map(event => ({
+        day: days[event.day],
+        time: hours[event.time],
+        title: event.title,
+        color: event.color,
+        duration: event.duration * 0.5, // Convertir steps en heures
+      }));
+
+      const data = await eventsAPI.saveAll(eventsForAPI);
       if (data.success) {
         alert("Planning sauvegardé avec succès!");
+        // Recharger les événements pour avoir les IDs du serveur
+        loadAllEvents();
       } else {
         alert("Erreur: " + (data.error || "Impossible de sauvegarder"));
       }
@@ -79,11 +95,19 @@ const PlanningInteractif = () => {
     try {
       const data = await eventsAPI.getAll();
       if (data.success) {
-        setEvents(data.events);
-        alert("Planning chargé avec succès!");
+        // Convertir les événements de l'API (noms → index)
+        const convertedEvents = data.events.map(event => ({
+          ...event,
+          day: getDayIndex(event.day),
+          time: getTimeIndex(event.time),
+          duration: Math.round(event.duration * 2), // Convertir heures en steps
+        }));
+        setEvents(convertedEvents);
+        console.log("Planning chargé:", convertedEvents);
       }
     } catch (err) {
       console.error("Erreur de chargement:", err);
+      alert("Erreur lors du chargement du planning");
     }
   };
 
@@ -103,22 +127,39 @@ const PlanningInteractif = () => {
       return;
     }
 
-    const id = Date.now();
     const maxSteps = 48 - modalData.hour;
     const safeDuration = Math.min(tempDuration, maxSteps);
 
+    // Convertir l'index du jour en nom du jour pour l'API
+    const dayName = days[modalData.day];
+    const timeFormatted = hours[modalData.hour];
+
     const newEvent = {
-      id,
-      day: modalData.day,
-      time: modalData.hour,
+      day: dayName,
+      time: timeFormatted,
       title: tempTitle,
       color: tempColor,
-      duration: safeDuration,
+      duration: safeDuration * 0.5, // Convertir steps en heures (1 step = 30min = 0.5h)
     };
 
-    setEvents([...events, newEvent]);
-    await eventsAPI.add(newEvent);
-    closeModal();
+    try {
+      const response = await eventsAPI.add(newEvent);
+      if (response.success) {
+        // Ajouter l'événement avec l'ID retourné par le serveur
+        setEvents([...events, {
+          ...response.event,
+          time: modalData.hour, // Garder l'index pour l'affichage
+          day: modalData.day,
+          duration: safeDuration, // Garder en steps pour l'affichage
+        }]);
+        closeModal();
+      } else {
+        alert("Erreur lors de l'ajout : " + (response.error || "Erreur inconnue"));
+      }
+    } catch (error) {
+      console.error("Erreur createEvent:", error);
+      alert("Erreur lors de l'ajout de l'événement");
+    }
   };
 
   const openEditModal = (event) => setEditModalData({ show: true, event });
@@ -139,9 +180,18 @@ const PlanningInteractif = () => {
 
   const removeEvent = async () => {
     const id = editModalData.event.id;
-    setEvents(events.filter((e) => e.id !== id));
-    await eventsAPI.delete(id);
-    closeEditModal();
+    try {
+      const response = await eventsAPI.delete(id);
+      if (response.success) {
+        setEvents(events.filter((e) => e.id !== id));
+        closeEditModal();
+      } else {
+        alert("Erreur lors de la suppression");
+      }
+    } catch (error) {
+      console.error("Erreur removeEvent:", error);
+      alert("Erreur lors de la suppression de l'événement");
+    }
   };
 
   const handleDragStart = (e, eventId) => {
@@ -152,20 +202,28 @@ const PlanningInteractif = () => {
     e.preventDefault();
     const eventId = parseInt(e.dataTransfer.getData("eventId"));
 
-    setEvents(
-      events.map((e) =>
-        e.id === eventId ? { ...e, day: dayIndex, time: hourIndex } : e
-      )
+    // Mettre à jour localement
+    const updatedEvents = events.map((ev) =>
+      ev.id === eventId ? { ...ev, day: dayIndex, time: hourIndex } : ev
     );
+    setEvents(updatedEvents);
 
-    const updated = events.find((e) => e.id === eventId);
+    // Mettre à jour sur le serveur
+    const updated = updatedEvents.find((e) => e.id === eventId);
     if (updated) {
-      await eventsAPI.update({
-        id: updated.id,
-        day: dayIndex,
-        time: hourIndex,
-        duration: updated.duration,
-      });
+      try {
+        await eventsAPI.update({
+          id: updated.id,
+          day: days[dayIndex],
+          time: hours[hourIndex],
+          title: updated.title,
+          color: updated.color,
+          duration: updated.duration * 0.5, // Convertir en heures
+        });
+      } catch (error) {
+        console.error("Erreur handleDrop:", error);
+        alert("Erreur lors du déplacement de l'événement");
+      }
     }
   };
 
@@ -192,12 +250,15 @@ const PlanningInteractif = () => {
             Math.min(ev.duration + steps, maxSteps)
           );
 
+          // Mettre à jour sur le serveur
           eventsAPI.update({
             id: ev.id,
-            day: ev.day,
-            time: ev.time,
-            duration: newDuration,
-          });
+            day: days[ev.day],
+            time: hours[ev.time],
+            title: ev.title,
+            color: ev.color,
+            duration: newDuration * 0.5, // Convertir en heures
+          }).catch(err => console.error("Erreur resize:", err));
 
           return { ...ev, duration: newDuration };
         })
@@ -399,10 +460,12 @@ const PlanningInteractif = () => {
 
                 eventsAPI.update({
                   id: editModalData.event.id,
-                  day: editModalData.event.day,
-                  time: editModalData.event.time,
-                  duration: clamped,
-                });
+                  day: days[editModalData.event.day],
+                  time: hours[editModalData.event.time],
+                  title: editModalData.event.title,
+                  color: editModalData.event.color,
+                  duration: clamped * 0.5, // Convertir en heures
+                }).catch(err => console.error("Erreur update:", err));
               }}
             >
               {durationOptions.map((d, i) => (

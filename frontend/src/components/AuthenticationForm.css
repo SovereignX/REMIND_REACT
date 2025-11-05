@@ -135,6 +135,54 @@
 }
 
 /* ============================================
+   PASSWORD INPUT WITH TOGGLE BUTTON
+   ============================================ */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 3rem; /* Espace pour le bouton */
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  opacity: 0.6;
+  border-radius: 4px;
+}
+
+.password-toggle-btn:hover:not(:disabled) {
+  opacity: 1;
+  background-color: rgba(147, 110, 158, 0.1);
+}
+
+.password-toggle-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.password-toggle-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+.password-toggle-btn:focus {
+  outline: 2px solid rgba(147, 110, 158, 0.5);
+  outline-offset: 2px;
+}
+
+/* ============================================
    AUTH FORM - Error Messages
    ============================================ */
 .error-message {
@@ -256,6 +304,14 @@
     font-size: 0.95rem;
   }
 
+  .password-input-wrapper input {
+    padding-right: 2.5rem;
+  }
+
+  .password-toggle-btn {
+    font-size: 1.1rem;
+  }
+
   .auth-submit-btn {
     padding: 0.875rem;
     font-size: 1rem;
@@ -307,5 +363,9 @@
 
   .auth-submit-btn:disabled::after {
     animation: none;
+  }
+
+  .password-toggle-btn {
+    transition: none;
   }
 }
