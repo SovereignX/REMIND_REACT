@@ -2,6 +2,7 @@
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/session.php';
+require_once '../../utils/validation.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -18,32 +19,39 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     sendResponse(false, ['message' => 'Données JSON invalides'], 400);
 }
 
-// ✅ EMAIL : PAS de htmlspecialchars, juste trim + validation
-$email = trim($data['email'] ?? '');
+// ============================================
+// NETTOYAGE & VALIDATION
+// ============================================
+
+// EMAIL : Utiliser cleanEmail()
+$email = cleanEmail($data['email'] ?? '');
+if (!$email) {
+    sendResponse(false, ['message' => "Format d'email invalide"], 400);
+}
+
+// NOM & PRÉNOM : Utiliser cleanName() - PAS htmlspecialchars !
+$nom = cleanName($data['nom'] ?? '');
+$prenom = cleanName($data['prenom'] ?? '');
+
+// MOT DE PASSE : Juste trim, pas de nettoyage (sera hashé)
 $password = trim($data['password'] ?? '');
 $confirm = trim($data['confirm'] ?? '');
 
-// ✅ NOM/PRÉNOM : htmlspecialchars car ce sont des textes libres
-$nom = htmlspecialchars(trim($data['nom'] ?? ''), ENT_QUOTES, 'UTF-8');
-$prenom = htmlspecialchars(trim($data['prenom'] ?? ''), ENT_QUOTES, 'UTF-8');
+// ============================================
+// VALIDATION
+// ============================================
 
 $errors = [];
 
-// Validation email
+// Validation email (déjà fait par cleanEmail, mais double check)
 if (empty($email)) {
     $errors[] = "L'email est requis";
-} elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $errors[] = "Format d'email invalide";
-} else {
-    // Normalisation (recommandé)
-    $email = strtolower($email);
 }
 
 // Validation mot de passe
-if (empty($password)) {
-    $errors[] = "Le mot de passe est requis";
-} elseif (strlen($password) < 8) {
-    $errors[] = "Le mot de passe doit contenir au moins 8 caractères";
+$passwordCheck = validatePassword($password);
+if (!$passwordCheck['valid']) {
+    $errors[] = $passwordCheck['error'];
 }
 
 if ($password !== $confirm) {
@@ -53,15 +61,23 @@ if ($password !== $confirm) {
 // Validation nom/prénom
 if (empty($nom)) {
     $errors[] = "Le nom est requis";
+} elseif (containsDangerousChars($nom)) {
+    $errors[] = "Le nom contient des caractères non autorisés";
 }
 
 if (empty($prenom)) {
     $errors[] = "Le prénom est requis";
+} elseif (containsDangerousChars($prenom)) {
+    $errors[] = "Le prénom contient des caractères non autorisés";
 }
 
 if (!empty($errors)) {
     sendResponse(false, ['errors' => $errors], 400);
 }
+
+// ============================================
+// INSERTION EN BASE
+// ============================================
 
 try {
     $db = getConnection();
@@ -78,7 +94,7 @@ try {
     // Hasher le mot de passe
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
     
-    // Insérer l'utilisateur
+    // Insérer l'utilisateur avec les données NETTOYÉES (pas échappées HTML)
     $req = $db->prepare(
         "INSERT INTO users (email, password, nom, prenom) 
          VALUES (:email, :password, :nom, :prenom)"
@@ -95,18 +111,18 @@ try {
     
     // Créer la session
     setAuthUser($userId, [
-        'email' => $email,      // Email ORIGINAL
-        'nom' => $nom,          // Nom échappé
-        'prenom' => $prenom     // Prénom échappé
+        'email' => $email,
+        'nom' => $nom,
+        'prenom' => $prenom
     ]);
     
-    // ✅ json_encode() échappe automatiquement les caractères spéciaux
+    // ✅ json_encode() échappe automatiquement pour JSON
     sendResponse(true, [
         'message' => 'Inscription réussie',
         'userId' => (int)$userId,
         'user' => [
             'id' => (int)$userId,
-            'email' => $email,      // Email ORIGINAL dans JSON
+            'email' => $email,
             'nom' => $nom,
             'prenom' => $prenom
         ]

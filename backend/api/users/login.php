@@ -2,6 +2,7 @@
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/session.php';
+require_once '../../utils/validation.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -18,20 +19,17 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     sendResponse(false, ['message' => 'Données JSON invalides'], 400);
 }
 
-// ✅ PAS de htmlspecialchars sur l'email
-$email = trim($data["email"] ?? '');
-$password = trim($data["password"] ?? '');
+// ✅ Nettoyage de l'email
+$email = cleanEmail($data["email"] ?? '');
+$password = trim($data["password"] ?? '');  // Juste trim pour le password
 
 // Validation email
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+if (!$email) {
     sendResponse(false, ['message' => "Format d'email invalide"], 400);
 }
 
 try {
     $db = getConnection();
-    
-    // Normalisation pour recherche (même que lors de l'inscription)
-    $email = strtolower($email);
     
     // Requête préparée
     $req = $db->prepare(
@@ -50,9 +48,9 @@ try {
         sendResponse(false, ['message' => 'Email ou mot de passe incorrect'], 401);
     }
     
-    // Créer la session
+    // Créer la session avec les données BRUTES de la BDD
     setAuthUser($user["id"], [
-        'email' => $user["email"],    // Email ORIGINAL
+        'email' => $user["email"],
         'nom' => $user["nom"],
         'prenom' => $user["prenom"]
     ]);
@@ -60,12 +58,13 @@ try {
     // Supprimer le mot de passe de la réponse
     unset($user['password']);
     
+    // ✅ json_encode() s'occupe de l'échappement automatiquement
     sendResponse(true, [
         'message' => 'Connexion réussie',
         'userId' => (int)$user["id"],
         'user' => [
             'id' => (int)$user["id"],
-            'email' => $user["email"],  // Email ORIGINAL
+            'email' => $user["email"],
             'nom' => $user["nom"],
             'prenom' => $user["prenom"]
         ]
