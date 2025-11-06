@@ -4,7 +4,7 @@
  * GET /api/events/get-events.php
  * 
  * Query params optionnels:
- * - day: filtrer par jour (ex: ?day=Lundi)
+ * - day_index: filtrer par jour (ex: ?day_index=0 pour Lundi)
  * - start_date: date de début (format: YYYY-MM-DD)
  * - end_date: date de fin
  */
@@ -34,20 +34,23 @@ try {
     $db = getConnection();
     
     // Construction de la requête selon les filtres
-    $sql = "SELECT id, user_id, day, time, title, color, duration, 
+    $sql = "SELECT id, user_id, day_index, time, title, color, duration, 
                    created_at, updated_at 
             FROM events 
             WHERE user_id = :user_id";
     
     $params = [':user_id' => $userId];
     
-    // Filtre optionnel par jour
-    if (isset($_GET['day']) && !empty($_GET['day'])) {
-        $sql .= " AND day = :day";
-        $params[':day'] = trim($_GET['day']);
+    // Filtre optionnel par day_index
+    if (isset($_GET['day_index']) && is_numeric($_GET['day_index'])) {
+        $dayIndex = intval($_GET['day_index']);
+        if ($dayIndex >= 0 && $dayIndex <= 6) {
+            $sql .= " AND day_index = :day_index";
+            $params[':day_index'] = $dayIndex;
+        }
     }
     
-    // Filtre optionnel par plage de dates (si vous utilisez des dates)
+    // Filtre optionnel par plage de dates
     if (isset($_GET['start_date']) && !empty($_GET['start_date'])) {
         $sql .= " AND created_at >= :start_date";
         $params[':start_date'] = $_GET['start_date'];
@@ -58,18 +61,8 @@ try {
         $params[':end_date'] = $_GET['end_date'];
     }
     
-    // Tri par jour et heure
-    $sql .= " ORDER BY 
-              CASE day
-                  WHEN 'Lundi' THEN 1
-                  WHEN 'Mardi' THEN 2
-                  WHEN 'Mercredi' THEN 3
-                  WHEN 'Jeudi' THEN 4
-                  WHEN 'Vendredi' THEN 5
-                  WHEN 'Samedi' THEN 6
-                  WHEN 'Dimanche' THEN 7
-              END,
-              time ASC";
+    // Tri optimisé par day_index puis par time
+    $sql .= " ORDER BY day_index ASC, time ASC";
     
     // Exécution de la requête
     $req = $db->prepare($sql);
@@ -84,6 +77,7 @@ try {
     foreach ($events as &$event) {
         $event['id'] = (int)$event['id'];
         $event['user_id'] = (int)$event['user_id'];
+        $event['day_index'] = (int)$event['day_index'];
         $event['duration'] = (float)$event['duration'];
     }
     

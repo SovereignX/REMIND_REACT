@@ -1,16 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./Planning.css";
 import { eventsAPI } from "../utils/apiUtils";
+import { DAYS, formatTimeRange, formatDuration } from "../utils/dateUtils";
 
-const days = [
-  "Lundi",
-  "Mardi",
-  "Mercredi",
-  "Jeudi",
-  "Vendredi",
-  "Samedi",
-  "Dimanche",
-];
 const hours = Array.from(
   { length: 48 },
   (_, i) =>
@@ -51,16 +43,6 @@ const PlanningInteractif = () => {
   const [titleError, setTitleError] = useState(false);
   const resizeRef = useRef(null);
 
-  // Fonction helper pour convertir le nom du jour en index
-  const getDayIndex = (dayName) => {
-    return days.indexOf(dayName);
-  };
-
-  // Fonction helper pour convertir l'heure en index
-  const getTimeIndex = (timeStr) => {
-    return hours.indexOf(timeStr);
-  };
-
   // 🔁 Load events on mount
   useEffect(() => {
     loadAllEvents();
@@ -68,9 +50,9 @@ const PlanningInteractif = () => {
 
   const saveAllEvents = async () => {
     try {
-      // Convertir les événements pour l'API (index → noms)
-      const eventsForAPI = events.map(event => ({
-        day: days[event.day],
+      // Convertir les événements pour l'API
+      const eventsForAPI = events.map((event) => ({
+        day_index: event.day_index, // ✅ Utiliser day_index
         time: hours[event.time],
         title: event.title,
         color: event.color,
@@ -80,7 +62,6 @@ const PlanningInteractif = () => {
       const data = await eventsAPI.saveAll(eventsForAPI);
       if (data.success) {
         alert("Planning sauvegardé avec succès!");
-        // Recharger les événements pour avoir les IDs du serveur
         loadAllEvents();
       } else {
         alert("Erreur: " + (data.error || "Impossible de sauvegarder"));
@@ -95,11 +76,10 @@ const PlanningInteractif = () => {
     try {
       const data = await eventsAPI.getAll();
       if (data.success) {
-        // Convertir les événements de l'API (noms → index)
-        const convertedEvents = data.events.map(event => ({
+        // Les événements arrivent avec day_index (0-6) directement
+        const convertedEvents = data.events.map((event) => ({
           ...event,
-          day: getDayIndex(event.day),
-          time: getTimeIndex(event.time),
+          time: hours.indexOf(event.time), // Convertir HH:MM en index
           duration: Math.round(event.duration * 2), // Convertir heures en steps
         }));
         setEvents(convertedEvents);
@@ -130,31 +110,33 @@ const PlanningInteractif = () => {
     const maxSteps = 48 - modalData.hour;
     const safeDuration = Math.min(tempDuration, maxSteps);
 
-    // Convertir l'index du jour en nom du jour pour l'API
-    const dayName = days[modalData.day];
-    const timeFormatted = hours[modalData.hour];
-
     const newEvent = {
-      day: dayName,
-      time: timeFormatted,
+      day_index: modalData.day, // ✅ Envoyer l'index directement (0-6)
+      time: hours[modalData.hour],
       title: tempTitle,
       color: tempColor,
-      duration: safeDuration * 0.5, // Convertir steps en heures (1 step = 30min = 0.5h)
+      duration: safeDuration * 0.5, // Convertir steps en heures
     };
+
+    console.log("Création événement:", newEvent); // Debug
 
     try {
       const response = await eventsAPI.add(newEvent);
       if (response.success) {
-        // Ajouter l'événement avec l'ID retourné par le serveur
-        setEvents([...events, {
-          ...response.event,
-          time: modalData.hour, // Garder l'index pour l'affichage
-          day: modalData.day,
-          duration: safeDuration, // Garder en steps pour l'affichage
-        }]);
+        setEvents([
+          ...events,
+          {
+            ...response.event,
+            time: modalData.hour, // Index pour l'affichage
+            duration: safeDuration, // En steps pour l'affichage
+          },
+        ]);
         closeModal();
       } else {
-        alert("Erreur lors de l'ajout : " + (response.error || "Erreur inconnue"));
+        alert(
+          "Erreur lors de l'ajout : " +
+            (response.error || response.errors?.join(", ") || "Erreur inconnue")
+        );
       }
     } catch (error) {
       console.error("Erreur createEvent:", error);
@@ -202,23 +184,21 @@ const PlanningInteractif = () => {
     e.preventDefault();
     const eventId = parseInt(e.dataTransfer.getData("eventId"));
 
-    // Mettre à jour localement
     const updatedEvents = events.map((ev) =>
-      ev.id === eventId ? { ...ev, day: dayIndex, time: hourIndex } : ev
+      ev.id === eventId ? { ...ev, day_index: dayIndex, time: hourIndex } : ev
     );
     setEvents(updatedEvents);
 
-    // Mettre à jour sur le serveur
     const updated = updatedEvents.find((e) => e.id === eventId);
     if (updated) {
       try {
         await eventsAPI.update({
           id: updated.id,
-          day: days[dayIndex],
+          day_index: dayIndex, // ✅ Envoyer day_index
           time: hours[hourIndex],
           title: updated.title,
           color: updated.color,
-          duration: updated.duration * 0.5, // Convertir en heures
+          duration: updated.duration * 0.5,
         });
       } catch (error) {
         console.error("Erreur handleDrop:", error);
@@ -251,14 +231,16 @@ const PlanningInteractif = () => {
           );
 
           // Mettre à jour sur le serveur
-          eventsAPI.update({
-            id: ev.id,
-            day: days[ev.day],
-            time: hours[ev.time],
-            title: ev.title,
-            color: ev.color,
-            duration: newDuration * 0.5, // Convertir en heures
-          }).catch(err => console.error("Erreur resize:", err));
+          eventsAPI
+            .update({
+              id: ev.id,
+              day_index: ev.day_index, // ✅ Envoyer day_index
+              time: hours[ev.time],
+              title: ev.title,
+              color: ev.color,
+              duration: newDuration * 0.5,
+            })
+            .catch((err) => console.error("Erreur resize:", err));
 
           return { ...ev, duration: newDuration };
         })
@@ -275,17 +257,10 @@ const PlanningInteractif = () => {
     resizeRef.current = null;
   };
 
-  const formatDuration = (steps) => {
-    const minutes = steps * 30;
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return h > 0 ? `${h}h${m === 30 ? "30" : ""}` : `${m}min`;
-  };
-
   const renderCell = (dayIdx, hourIdx) => {
     const overlappingEvents = events.filter(
       (e) =>
-        e.day === dayIdx &&
+        e.day_index === dayIdx && // ✅ Utiliser day_index
         e.time <= hourIdx &&
         hourIdx < e.time + (e.duration || 1)
     );
@@ -320,13 +295,16 @@ const PlanningInteractif = () => {
                     }}
                     style={{
                       backgroundColor: event.color,
-                      height: `${event.duration * 100}%`,
+                      height: `calc(${event.duration} * 40px - 4px)`,
                       width: `${100 / overlappingEvents.length}%`,
                     }}
                   >
                     <div className="event-title">{event.title}</div>
+                    <div className="event-time-range">
+                      {formatTimeRange(hours[event.time], event.duration * 0.5)}
+                    </div>
                     <div className="event-duration">
-                      {formatDuration(event.duration)}
+                      ({formatDuration(event.duration * 0.5)})
                     </div>
                     <div
                       className="resize-handle"
@@ -352,9 +330,9 @@ const PlanningInteractif = () => {
       <div className="planning">
         <div className="planning-header">
           <div className="planning-time-column" />
-          {days.map((day, idx) => (
-            <div key={idx} className="planning-day-header">
-              {day}
+          {DAYS.map((dayName, dayIndex) => (
+            <div key={dayIndex} className="planning-day-header">
+              {dayName}
             </div>
           ))}
         </div>
@@ -363,7 +341,7 @@ const PlanningInteractif = () => {
           {hours.map((hour, hourIdx) => (
             <div key={hourIdx} className="planning-row">
               <div className="planning-time-label">{hour}</div>
-              {days.map((_, dayIdx) => renderCell(dayIdx, hourIdx))}
+              {DAYS.map((_, dayIdx) => renderCell(dayIdx, hourIdx))}
             </div>
           ))}
         </div>
@@ -458,14 +436,16 @@ const PlanningInteractif = () => {
                 const clamped = Math.min(Number(e.target.value), maxSteps);
                 updateEventField("duration", clamped);
 
-                eventsAPI.update({
-                  id: editModalData.event.id,
-                  day: days[editModalData.event.day],
-                  time: hours[editModalData.event.time],
-                  title: editModalData.event.title,
-                  color: editModalData.event.color,
-                  duration: clamped * 0.5, // Convertir en heures
-                }).catch(err => console.error("Erreur update:", err));
+                eventsAPI
+                  .update({
+                    id: editModalData.event.id,
+                    day_index: editModalData.event.day_index, // ✅ Envoyer day_index
+                    time: hours[editModalData.event.time],
+                    title: editModalData.event.title,
+                    color: editModalData.event.color,
+                    duration: clamped * 0.5,
+                  })
+                  .catch((err) => console.error("Erreur update:", err));
               }}
             >
               {durationOptions.map((d, i) => (

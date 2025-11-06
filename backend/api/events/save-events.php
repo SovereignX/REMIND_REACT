@@ -9,7 +9,7 @@
  * {
  *   "events": [
  *     {
- *       "day": "Lundi",
+ *       "day_index": 0,     // 0=Lundi, 1=Mardi, ..., 6=Dimanche
  *       "time": "09:00",
  *       "title": "Réunion",
  *       "color": "#b4a7d6",
@@ -23,6 +23,7 @@
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/auth.php';
+require_once '../../utils/days.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -41,8 +42,10 @@ function sendResponse($success, $data = [], $httpCode = 200) {
 function validateEvent($event, $index) {
     $errors = [];
     
-    if (empty($event['day'])) {
-        $errors[] = "Événement $index : le jour est requis";
+    if (!isset($event['day_index'])) {
+        $errors[] = "Événement $index : l'index du jour est requis";
+    } elseif (!isValidDayIndex($event['day_index'])) {
+        $errors[] = "Événement $index : index de jour invalide (doit être entre 0 et 6)";
     }
     
     if (empty($event['time']) || !preg_match('/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', $event['time'])) {
@@ -106,38 +109,56 @@ try {
     $deleteReq->bindParam(':user_id', $userId, PDO::PARAM_INT);
     $deleteReq->execute();
     
+    $deletedCount = $deleteReq->rowCount();
+    error_log("Suppression de $deletedCount événements pour l'utilisateur $userId");
+    
     // Préparer la requête d'insertion
     $insertReq = $db->prepare(
-        "INSERT INTO events (user_id, day, time, title, color, duration) 
-         VALUES (:user_id, :day, :time, :title, :color, :duration)"
+        "INSERT INTO events (user_id, day_index, time, title, color, duration) 
+         VALUES (:user_id, :day_index, :time, :title, :color, :duration)"
     );
     
     $insertedEvents = [];
     
     // Insérer tous les nouveaux événements
     foreach ($data['events'] as $event) {
+        $dayIndex = intval($event['day_index']);
+        $time = trim($event['time']);
+        $title = trim($event['title']);
+        $color = trim($event['color']);
+        $duration = floatval($event['duration']);
+        
         $insertReq->bindParam(':user_id', $userId, PDO::PARAM_INT);
-        $insertReq->bindParam(':day', $event['day'], PDO::PARAM_STR);
-        $insertReq->bindParam(':time', $event['time'], PDO::PARAM_STR);
-        $insertReq->bindParam(':title', $event['title'], PDO::PARAM_STR);
-        $insertReq->bindParam(':color', $event['color'], PDO::PARAM_STR);
-        $insertReq->bindValue(':duration', floatval($event['duration']));
+        $insertReq->bindParam(':day_index', $dayIndex, PDO::PARAM_INT);
+        $insertReq->bindParam(':time', $time, PDO::PARAM_STR);
+        $insertReq->bindParam(':title', $title, PDO::PARAM_STR);
+        $insertReq->bindParam(':color', $color, PDO::PARAM_STR);
+        $insertReq->bindParam(':duration', $duration);
         
         $insertReq->execute();
         
         // Récupérer l'ID généré et stocker l'événement
         $newId = $db->lastInsertId();
-        $event['id'] = (int)$newId;
-        $event['user_id'] = $userId;
-        $insertedEvents[] = $event;
+        $insertedEvents[] = [
+            'id' => (int)$newId,
+            'user_id' => $userId,
+            'day_index' => $dayIndex,
+            'time' => $time,
+            'title' => $title,
+            'color' => $color,
+            'duration' => $duration
+        ];
     }
     
     // Valider la transaction
     $db->commit();
     
+    error_log("Planning sauvegardé: " . count($insertedEvents) . " événements insérés");
+    
     sendResponse(true, [
         'message' => 'Planning sauvegardé avec succès',
-        'count' => count($insertedEvents),
+        'deleted_count' => $deletedCount,
+        'inserted_count' => count($insertedEvents),
         'events' => $insertedEvents
     ], 201);
     

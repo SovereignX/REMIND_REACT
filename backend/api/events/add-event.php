@@ -5,7 +5,7 @@
  * 
  * Body JSON requis:
  * {
- *   "day": "Lundi",
+ *   "day_index": 0,       // 0=Lundi, 1=Mardi, ..., 6=Dimanche
  *   "time": "09:00",
  *   "title": "Réunion",
  *   "color": "#b4a7d6",
@@ -16,6 +16,7 @@
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/auth.php';
+require_once '../../utils/days.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -34,8 +35,11 @@ function sendResponse($success, $data = [], $httpCode = 200) {
 function validateEventData($data) {
     $errors = [];
     
-    if (empty($data['day'])) {
-        $errors[] = "Le jour est requis";
+    // Valider day_index
+    if (!isset($data['day_index'])) {
+        $errors[] = "L'index du jour est requis";
+    } elseif (!isValidDayIndex($data['day_index'])) {
+        $errors[] = "L'index du jour doit être entre 0 et 6 (0=Lundi, 6=Dimanche)";
     }
     
     if (empty($data['time']) || !preg_match('/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', $data['time'])) {
@@ -79,7 +83,7 @@ if (!empty($errors)) {
 }
 
 // Nettoyer les données
-$day = trim($data['day']);
+$dayIndex = intval($data['day_index']);
 $time = trim($data['time']);
 $title = trim($data['title']);
 $color = trim($data['color']);
@@ -90,12 +94,12 @@ try {
     $db = getConnection();
     
     $req = $db->prepare(
-        "INSERT INTO events (user_id, day, time, title, color, duration) 
-         VALUES (:user_id, :day, :time, :title, :color, :duration)"
+        "INSERT INTO events (user_id, day_index, time, title, color, duration) 
+         VALUES (:user_id, :day_index, :time, :title, :color, :duration)"
     );
     
     $req->bindParam(':user_id', $userId, PDO::PARAM_INT);
-    $req->bindParam(':day', $day, PDO::PARAM_STR);
+    $req->bindParam(':day_index', $dayIndex, PDO::PARAM_INT);
     $req->bindParam(':time', $time, PDO::PARAM_STR);
     $req->bindParam(':title', $title, PDO::PARAM_STR);
     $req->bindParam(':color', $color, PDO::PARAM_STR);
@@ -105,12 +109,15 @@ try {
     
     $eventId = $db->lastInsertId();
     
+    // Log pour debug (optionnel)
+    error_log("Événement créé: ID=$eventId, Jour=" . dayIndexToName($dayIndex) . " ($dayIndex), Heure=$time");
+    
     sendResponse(true, [
         'message' => 'Événement ajouté avec succès',
         'event' => [
             'id' => $eventId,
             'user_id' => $userId,
-            'day' => $day,
+            'day_index' => $dayIndex,
             'time' => $time,
             'title' => $title,
             'color' => $color,

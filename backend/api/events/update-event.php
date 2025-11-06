@@ -6,7 +6,7 @@
  * Body JSON requis:
  * {
  *   "id": 1,
- *   "day": "Lundi",        // optionnel
+ *   "day_index": 0,        // optionnel (0=Lundi, 6=Dimanche)
  *   "time": "09:00",       // optionnel
  *   "title": "Réunion",    // optionnel
  *   "color": "#b4a7d6",    // optionnel
@@ -17,6 +17,7 @@
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/auth.php';
+require_once '../../utils/days.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -69,9 +70,12 @@ try {
     $params = [':id' => $eventId, ':user_id' => $userId];
     
     // Validation et ajout des champs à mettre à jour
-    if (isset($data['day'])) {
-        $updateFields[] = "day = :day";
-        $params[':day'] = trim($data['day']);
+    if (isset($data['day_index'])) {
+        if (!isValidDayIndex($data['day_index'])) {
+            sendResponse(false, ['error' => 'Index de jour invalide (doit être entre 0 et 6)'], 400);
+        }
+        $updateFields[] = "day_index = :day_index";
+        $params[':day_index'] = intval($data['day_index']);
     }
     
     if (isset($data['time'])) {
@@ -122,6 +126,12 @@ try {
     $getReq->bindParam(':id', $eventId, PDO::PARAM_INT);
     $getReq->execute();
     $updatedEvent = $getReq->fetch(PDO::FETCH_ASSOC);
+    
+    // Formater les données
+    $updatedEvent['id'] = (int)$updatedEvent['id'];
+    $updatedEvent['user_id'] = (int)$updatedEvent['user_id'];
+    $updatedEvent['day_index'] = (int)$updatedEvent['day_index'];
+    $updatedEvent['duration'] = (float)$updatedEvent['duration'];
     
     sendResponse(true, [
         'message' => 'Événement mis à jour avec succès',

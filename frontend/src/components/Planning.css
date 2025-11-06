@@ -35,7 +35,7 @@
   .planning-row {
     display: flex;
     border-bottom: 1px solid #eee;
-    min-height: 30px;
+    height: 40px;
   }
   
   .planning-time-label {
@@ -71,7 +71,7 @@
   .event-block {
     background-color: #1e90ff;
     color: white;
-    padding: 3px 6px;
+    padding: 6px 4px;
     font-size: 12px;
     border-radius: 4px;
     position: absolute;
@@ -82,6 +82,9 @@
     cursor: grab;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     user-select: none;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
   }
   
   .occupied {
@@ -120,218 +123,6 @@
   .modal-buttons button {
     margin: 5px;
     padding: 6px 12px;
-  }
-  
-  .color-preview {
-    width: 100%;
-    height: 30px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  .planning-row {
-    display: flex;
-    height: 40px;
-  }
-  
-  .event-block {
-    position: relative;
-    width: 100%;
-    color: white;
-    padding: 4px;
-    border-radius: 4px;
-    cursor: grab;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    font-size: 0.85rem;
-  }
-  
-  .event-title {
-    font-weight: bold;
-  }
-  
-  .event-duration {
-    font-size: 0.75rem;
-    margin-top: 2px;
-  }
-  
-  .resize-handle {
-    text-align: center;
-    font-size: 0.8rem;
-    cursor: ns-resize;
-    user-select: none;
-    margin-top: 4px;
-    color: #eee;
-  }
-  
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-  }
-  
-  .modal {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 280px;
-    text-align: center;
-  }
-  
-  .modal input,
-  .modal select {
-    width: 100%;
-    margin: 10px 0;
-    padding: 6px;
-    font-size: 1rem;
-  }
-  
-  .modal-buttons button {
-    margin: 5px;
-    padding: 6px 12px;
-  }
-  
-  .color-preview {
-    width: 100%;
-    height: 30px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  .planning-row {
-    display: flex;
-    height: 40px;
-  }
-  
-  .planning-cell {
-    flex: 1;
-    border: 1px solid #eee;
-    position: relative;
-  }
-  
-  .occupied {
-    background: rgba(0,0,0,0.03);
-  }
-  
-  .event-container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-  
-  .event-block {
-    position: absolute;
-    color: white;
-    padding: 4px;
-    border-radius: 4px;
-    cursor: grab;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    top: 0;
-    z-index: 2;
-  }
-  
-  .event-title {
-    font-weight: bold;
-  }
-  
-  .event-duration {
-    font-size: 0.75rem;
-    margin-top: 2px;
-  }
-  
-  .resize-handle {
-    text-align: center;
-    font-size: 0.8rem;
-    cursor: ns-resize;
-    user-select: none;
-    margin-top: auto;
-    padding: 2px;
-    background-color: rgba(0, 0, 0, 0.1);
-    border-top: 1px solid rgba(255,255,255,0.3);
-  }
-  
-  .planning-row {
-    display: flex;
-    height: 40px;
-  }
-  
-  .planning-cell {
-    flex: 1;
-    border: 1px solid #eee;
-    position: relative;
-  }
-  
-  .occupied {
-    background: rgba(0,0,0,0.03);
-  }
-  
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-  }
-  
-  .modal {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 280px;
-    text-align: center;
-  }
-  
-  .modal input,
-  .modal select {
-    width: 100%;
-    margin: 10px 0;
-    padding: 6px;
-    font-size: 1rem;
-  }
-  
-  .modal-buttons button {
-    margin: 5px;
-    padding: 6px 12px;
-  }
-  
-  .color-preview {
-    width: 100%;
-    height: 30px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  .error-text {
-    color: #f44336;
-    font-size: 0.9rem;
-    margin-top: -8px;
-    margin-bottom: 10px;
-    text-align: left;
-  } 
-  .modal-buttons button {
-    margin: 5px;
-    padding: 6px 12px;
     font-size: 1rem;
     border: none;
     border-radius: 5px;
@@ -356,7 +147,75 @@
   
   .modal-buttons button:hover {
     filter: brightness(1.1);
-  } 
+  }
+  
+  .color-preview {
+    width: 100%;
+    height: 30px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .planning-row {
+    display: flex;
+    height: 40px;
+  }
+  
+  .event-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  
+  /* ============================================
+     AFFICHAGE DES ÉVÉNEMENTS AMÉLIORÉ
+     ============================================ */
+  
+  .event-title {
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+  }
+  
+  /* Nouvelle classe pour afficher la plage horaire */
+  .event-time-range {
+    font-size: 0.7rem;
+    margin-top: 2px;
+    opacity: 0.95;
+    font-weight: normal;
+  }
+  
+  /* Affichage de la durée entre parenthèses */
+  .event-duration {
+    font-size: 0.7rem;
+    margin-top: 1px;
+    opacity: 0.85;
+    font-style: italic;
+  }
+  
+  .resize-handle {
+    text-align: center;
+    font-size: 0.8rem;
+    cursor: ns-resize;
+    user-select: none;
+    margin-top: auto;
+    padding: 2px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(255,255,255,0.3);
+  }
+  
+  .error-text {
+    color: #f44336;
+    font-size: 0.9rem;
+    margin-top: -8px;
+    margin-bottom: 10px;
+    text-align: left;
+  }
+  
   .planning-controls {
     display: flex;
     justify-content: flex-end;
@@ -379,4 +238,3 @@
   .planning-controls button:hover {
     background: #0d47a1;
   }
-  
