@@ -3,11 +3,22 @@ import "./Planning.css";
 import { eventsAPI } from "../utils/apiUtils";
 import { DAYS, formatTimeRange, formatDuration } from "../utils/dateUtils";
 
-const hours = Array.from(
+// Générer toutes les heures (00:00 à 23:30)
+const allHours = Array.from(
   { length: 48 },
   (_, i) =>
     `${String(Math.floor(i / 2)).padStart(2, "0")}:${i % 2 === 0 ? "00" : "30"}`
 );
+
+// Plages horaires prédéfinies
+const timeRanges = [
+  { label: "Journée complète (00:00 - 23:30)", start: 0, end: 48 },
+  { label: "Matinée (06:00 - 14:00)", start: 12, end: 28 },
+  { label: "Après-midi (12:00 - 20:00)", start: 24, end: 40 },
+  { label: "Journée de travail (07:00 - 19:00)", start: 14, end: 38 },
+  { label: "Journée étendue (06:00 - 23:30)", start: 12, end: 48 },
+  { label: "Soirée (17:00 - 23:30)", start: 34, end: 48 },
+];
 
 const colorChoices = [
   { name: "Bleu", value: "#2196f3" },
@@ -41,7 +52,15 @@ const PlanningInteractif = () => {
   const [tempDuration, setTempDuration] = useState(1);
   const [disableDrag, setDisableDrag] = useState(false);
   const [titleError, setTitleError] = useState(false);
+  const [selectedRangeIndex, setSelectedRangeIndex] = useState(3); // Par défaut: Journée de travail
   const resizeRef = useRef(null);
+
+  // Calculer la plage d'heures visible et l'offset
+  const visibleHours = allHours.slice(
+    timeRanges[selectedRangeIndex].start,
+    timeRanges[selectedRangeIndex].end
+  );
+  const hourOffset = timeRanges[selectedRangeIndex].start;
 
   // 🔁 Load events on mount
   useEffect(() => {
@@ -53,7 +72,7 @@ const PlanningInteractif = () => {
       // Convertir les événements pour l'API
       const eventsForAPI = events.map((event) => ({
         day_index: event.day_index, // ✅ Utiliser day_index
-        time: hours[event.time],
+        time: allHours[event.time],
         title: event.title,
         color: event.color,
         duration: event.duration * 0.5, // Convertir steps en heures
@@ -79,7 +98,7 @@ const PlanningInteractif = () => {
         // Les événements arrivent avec day_index (0-6) directement
         const convertedEvents = data.events.map((event) => ({
           ...event,
-          time: hours.indexOf(event.time), // Convertir HH:MM en index
+          time: allHours.indexOf(event.time), // Convertir HH:MM en index
           duration: Math.round(event.duration * 2), // Convertir heures en steps
         }));
         setEvents(convertedEvents);
@@ -112,7 +131,7 @@ const PlanningInteractif = () => {
 
     const newEvent = {
       day_index: modalData.day, // ✅ Envoyer l'index directement (0-6)
-      time: hours[modalData.hour],
+      time: allHours[modalData.hour],
       title: tempTitle,
       color: tempColor,
       duration: safeDuration * 0.5, // Convertir steps en heures
@@ -195,7 +214,7 @@ const PlanningInteractif = () => {
         await eventsAPI.update({
           id: updated.id,
           day_index: dayIndex, // ✅ Envoyer day_index
-          time: hours[hourIndex],
+          time: allHours[hourIndex],
           title: updated.title,
           color: updated.color,
           duration: updated.duration * 0.5,
@@ -235,7 +254,7 @@ const PlanningInteractif = () => {
             .update({
               id: ev.id,
               day_index: ev.day_index, // ✅ Envoyer day_index
-              time: hours[ev.time],
+              time: allHours[ev.time],
               title: ev.title,
               color: ev.color,
               duration: newDuration * 0.5,
@@ -258,14 +277,17 @@ const PlanningInteractif = () => {
   };
 
   const renderCell = (dayIdx, hourIdx) => {
+    // hourIdx est relatif à la plage visible, convertir en index global
+    const globalHourIdx = hourIdx + hourOffset;
+
     const overlappingEvents = events.filter(
       (e) =>
         e.day_index === dayIdx && // ✅ Utiliser day_index
-        e.time <= hourIdx &&
-        hourIdx < e.time + (e.duration || 1)
+        e.time <= globalHourIdx &&
+        globalHourIdx < e.time + (e.duration || 1)
     );
 
-    const isStart = (e) => e.time === hourIdx;
+    const isStart = (e) => e.time === globalHourIdx;
 
     return (
       <div
@@ -274,9 +296,9 @@ const PlanningInteractif = () => {
           overlappingEvents.length ? "occupied" : ""
         }`}
         onClick={() =>
-          overlappingEvents.length === 0 && openModal(dayIdx, hourIdx)
+          overlappingEvents.length === 0 && openModal(dayIdx, globalHourIdx)
         }
-        onDrop={(e) => handleDrop(e, dayIdx, hourIdx)}
+        onDrop={(e) => handleDrop(e, dayIdx, globalHourIdx)}
         onDragOver={(e) => e.preventDefault()}
       >
         {overlappingEvents.length > 0 && (
@@ -301,7 +323,10 @@ const PlanningInteractif = () => {
                   >
                     <div className="event-title">{event.title}</div>
                     <div className="event-time-range">
-                      {formatTimeRange(hours[event.time], event.duration * 0.5)}
+                      {formatTimeRange(
+                        allHours[event.time],
+                        event.duration * 0.5
+                      )}
                     </div>
                     <div className="event-duration">
                       ({formatDuration(event.duration * 0.5)})
@@ -324,8 +349,24 @@ const PlanningInteractif = () => {
   return (
     <>
       <div className="planning-controls">
-        <button onClick={loadAllEvents}>Charger</button>
-        <button onClick={saveAllEvents}>Sauvegarder</button>
+        <div className="time-range-selector">
+          <label htmlFor="time-range">Plage horaire : </label>
+          <select
+            id="time-range"
+            value={selectedRangeIndex}
+            onChange={(e) => setSelectedRangeIndex(Number(e.target.value))}
+          >
+            {timeRanges.map((range, idx) => (
+              <option key={idx} value={idx}>
+                {range.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="action-buttons">
+          <button onClick={loadAllEvents}>Charger</button>
+          <button onClick={saveAllEvents}>Sauvegarder</button>
+        </div>
       </div>
       <div className="planning">
         <div className="planning-header">
@@ -338,7 +379,7 @@ const PlanningInteractif = () => {
         </div>
 
         <div className="planning-body">
-          {hours.map((hour, hourIdx) => (
+          {visibleHours.map((hour, hourIdx) => (
             <div key={hourIdx} className="planning-row">
               <div className="planning-time-label">{hour}</div>
               {DAYS.map((_, dayIdx) => renderCell(dayIdx, hourIdx))}
@@ -440,7 +481,7 @@ const PlanningInteractif = () => {
                   .update({
                     id: editModalData.event.id,
                     day_index: editModalData.event.day_index, // ✅ Envoyer day_index
-                    time: hours[editModalData.event.time],
+                    time: allHours[editModalData.event.time],
                     title: editModalData.event.title,
                     color: editModalData.event.color,
                     duration: clamped * 0.5,
