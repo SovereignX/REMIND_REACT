@@ -172,8 +172,6 @@ nav {
 @media (max-width: 768px) {
   nav {
     padding: 0.75rem 1rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
   }
 
   .logo-btn {
@@ -186,44 +184,88 @@ nav {
   }
 
   .nav-right {
-    width: 100%;
-    justify-content: center;
     gap: 0.5rem;
-    margin-top: 0.5rem;
   }
 
   .nav-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    flex: 1;
-    max-width: 150px;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.85rem;
   }
 
   .user-name {
-    width: 100%;
-    text-align: center;
-    margin-right: 0;
-    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    margin-right: 0.25rem;
   }
 }
 
-@media (max-width: 480px) {
-  .nav-btn {
+@media (max-width: 640px) {
+  nav {
     padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
   }
 
   .logo-btn {
     font-size: 1.1rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .nav-right {
+    gap: 0.375rem;
+  }
+
+  .nav-btn {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .user-name {
+    font-size: 0.85rem;
+    margin-right: 0.25rem;
+  }
+
+  /* Réduire la taille des icônes sur mobile */
+  .nav-btn-icon svg {
+    width: 16px;
+    height: 16px;
   }
 }
 
-/* ============================================
-   ANIMATIONS (suppression du slideDown)
-   ============================================ */
-/* Animation plus subtile pour un rendu professionnel */
-header {
-  opacity: 1;
+@media (max-width: 480px) {
+  nav {
+    padding: 0.5rem 0.5rem;
+  }
+
+  .logo-btn {
+    font-size: 1rem;
+    padding: 0.25rem 0.375rem;
+  }
+
+  .nav-right {
+    gap: 0.25rem;
+  }
+
+  .nav-btn {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  .user-name {
+    font-size: 0.8rem;
+    margin-right: 0.125rem;
+  }
+
+  /* Cacher le texte des boutons avec icônes sur très petit écran */
+  .nav-btn-icon span {
+    display: none;
+  }
+
+  .nav-btn-icon {
+    gap: 0;
+  }
+
+  .nav-btn-icon svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 /* ============================================

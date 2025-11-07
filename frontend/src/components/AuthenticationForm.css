@@ -7,11 +7,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  background: linear-gradient(
-    135deg,
-    rgba(147, 110, 158, 0.05) 0%,
-    rgba(180, 167, 214, 0.05) 100%
-  );
+  background: #f5f5f5;
 }
 
 .auth-card {
@@ -39,7 +35,7 @@
    AUTH FORM - Header
    ============================================ */
 .auth-header {
-  background: linear-gradient(135deg, #936e9e 0%, #b4a7d6 100%);
+  background: #936e9e;
   padding: 2rem;
   text-align: center;
   color: white;
@@ -107,7 +103,7 @@
   font-family: inherit;
   transition: all 0.3s ease;
   background-color: #fafafa;
-  box-sizing: border-box; /* Assurer que le padding est inclus dans width */
+  box-sizing: border-box;
 }
 
 .auth-form input:focus {
@@ -146,7 +142,7 @@
 }
 
 .password-input-wrapper input {
-  padding-right: 3rem; /* Espace pour le bouton */
+  padding-right: 3rem;
 }
 
 .password-toggle-btn {
@@ -210,7 +206,7 @@
 .auth-submit-btn {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #936e9e 0%, #b4a7d6 100%);
+  background: #936e9e;
   color: white;
   border: none;
   border-radius: 8px;
@@ -224,7 +220,7 @@
 }
 
 .auth-submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #8272ac 0%, #9c88c1 100%);
+  background: #8272ac;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(147, 110, 158, 0.4);
 }
@@ -282,13 +278,14 @@
    ============================================ */
 @media (max-width: 575px) {
   .form-row {
-    grid-template-columns: 1fr; /* Une seule colonne sur petit écran */
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 767px) {
   .auth-container {
     padding: 1rem;
+    min-height: calc(100vh - 180px);
   }
 
   .auth-header {
@@ -328,11 +325,12 @@
 
 @media (max-width: 480px) {
   .auth-card {
-    border-radius: 0;
+    border-radius: 8px;
   }
 
   .auth-container {
-    padding: 0;
+    padding: 0.5rem;
+    min-height: calc(100vh - 160px);
   }
 }
 
