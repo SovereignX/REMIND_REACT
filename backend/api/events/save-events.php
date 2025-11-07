@@ -2,34 +2,16 @@
 /**
  * API - Sauvegarder un planning complet
  * POST /api/events/save-events.php
- * 
- * Remplace tous les événements de l'utilisateur par un nouveau planning
- * 
- * Body JSON requis:
- * {
- *   "events": [
- *     {
- *       "day_index": 0,     // 0=Lundi, 1=Mardi, ..., 6=Dimanche
- *       "time": "09:00",
- *       "title": "Réunion",
- *       "color": "#b4a7d6",
- *       "duration": 1.5
- *     },
- *     ...
- *   ]
- * }
  */
 
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/auth.php';
 require_once '../../utils/days.php';
+require_once '../../utils/validation.php';  // ← NOUVEAU
 
 header("Content-Type: application/json; charset=UTF-8");
 
-/**
- * Fonction helper pour les réponses JSON
- */
 function sendResponse($success, $data = [], $httpCode = 200) {
     http_response_code($httpCode);
     echo json_encode(array_merge(['success' => $success], $data));
@@ -71,17 +53,14 @@ function validateEvent($event, $index) {
 $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
-// Vérifier la validité du JSON
 if (json_last_error() !== JSON_ERROR_NONE) {
     sendResponse(false, ['error' => 'Format JSON invalide'], 400);
 }
 
-// Vérifier la présence du tableau d'événements
 if (!isset($data['events']) || !is_array($data['events'])) {
     sendResponse(false, ['error' => 'Le champ "events" doit être un tableau'], 400);
 }
 
-// Récupérer l'utilisateur connecté
 $userId = getUserId();
 if (!$userId) {
     sendResponse(false, ['error' => 'Authentification requise'], 401);
@@ -124,14 +103,28 @@ try {
     foreach ($data['events'] as $event) {
         $dayIndex = intval($event['day_index']);
         $time = trim($event['time']);
-        $title = trim($event['title']);
+        
+        // ✅ NETTOYER le titre
+        $title = cleanEventTitle($event['title']);
+        
+        // Vérifier que le titre nettoyé n'est pas vide
+        if (empty($title)) {
+            $db->rollBack();
+            sendResponse(false, ['error' => 'Un titre ne peut pas être vide ou contenir uniquement des balises HTML'], 400);
+        }
+        
+        if (containsDangerousChars($title)) {
+            $db->rollBack();
+            sendResponse(false, ['error' => 'Un titre contient des éléments non autorisés'], 400);
+        }
+        
         $color = trim($event['color']);
         $duration = floatval($event['duration']);
         
         $insertReq->bindParam(':user_id', $userId, PDO::PARAM_INT);
         $insertReq->bindParam(':day_index', $dayIndex, PDO::PARAM_INT);
         $insertReq->bindParam(':time', $time, PDO::PARAM_STR);
-        $insertReq->bindParam(':title', $title, PDO::PARAM_STR);
+        $insertReq->bindParam(':title', $title, PDO::PARAM_STR);  // Titre nettoyé
         $insertReq->bindParam(':color', $color, PDO::PARAM_STR);
         $insertReq->bindParam(':duration', $duration);
         
@@ -144,7 +137,7 @@ try {
             'user_id' => $userId,
             'day_index' => $dayIndex,
             'time' => $time,
-            'title' => $title,
+            'title' => $title,  // Titre nettoyé
             'color' => $color,
             'duration' => $duration
         ];

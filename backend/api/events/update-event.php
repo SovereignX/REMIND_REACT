@@ -2,28 +2,16 @@
 /**
  * API - Mettre à jour un événement
  * PUT /api/events/update-event.php
- * 
- * Body JSON requis:
- * {
- *   "id": 1,
- *   "day_index": 0,        // optionnel (0=Lundi, 6=Dimanche)
- *   "time": "09:00",       // optionnel
- *   "title": "Réunion",    // optionnel
- *   "color": "#b4a7d6",    // optionnel
- *   "duration": 1.5        // optionnel
- * }
  */
 
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/auth.php';
 require_once '../../utils/days.php';
+require_once '../../utils/validation.php';  // ← NOUVEAU
 
 header("Content-Type: application/json; charset=UTF-8");
 
-/**
- * Fonction helper pour les réponses JSON
- */
 function sendResponse($success, $data = [], $httpCode = 200) {
     http_response_code($httpCode);
     echo json_encode(array_merge(['success' => $success], $data));
@@ -34,17 +22,14 @@ function sendResponse($success, $data = [], $httpCode = 200) {
 $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
-// Vérifier la validité du JSON
 if (json_last_error() !== JSON_ERROR_NONE) {
     sendResponse(false, ['error' => 'Format JSON invalide'], 400);
 }
 
-// Vérifier l'ID de l'événement
 if (!isset($data['id']) || !is_numeric($data['id'])) {
     sendResponse(false, ['error' => 'ID de l\'événement requis'], 400);
 }
 
-// Récupérer l'utilisateur connecté
 $userId = getUserId();
 if (!$userId) {
     sendResponse(false, ['error' => 'Authentification requise'], 401);
@@ -87,11 +72,23 @@ try {
     }
     
     if (isset($data['title'])) {
-        if (empty($data['title']) || strlen($data['title']) > 255) {
+        // ✅ NETTOYER le titre
+        $cleanedTitle = cleanEventTitle($data['title']);
+        
+        if (empty($cleanedTitle)) {
+            sendResponse(false, ['error' => 'Titre invalide (vide ou contient uniquement des balises)'], 400);
+        }
+        
+        if (strlen($cleanedTitle) > 255) {
             sendResponse(false, ['error' => 'Titre invalide (max 255 caractères)'], 400);
         }
+        
+        if (containsDangerousChars($cleanedTitle)) {
+            sendResponse(false, ['error' => 'Le titre contient des éléments non autorisés'], 400);
+        }
+        
         $updateFields[] = "title = :title";
-        $params[':title'] = trim($data['title']);
+        $params[':title'] = $cleanedTitle;
     }
     
     if (isset($data['color'])) {

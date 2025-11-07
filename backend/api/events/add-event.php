@@ -17,6 +17,7 @@ require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/auth.php';
 require_once '../../utils/days.php';
+require_once '../../utils/validation.php';  // ← NOUVEAU
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -82,14 +83,33 @@ if (!empty($errors)) {
     sendResponse(false, ['errors' => $errors], 400);
 }
 
-// Nettoyer les données
+// ============================================
+// NETTOYER LES DONNÉES (SÉCURITÉ XSS)
+// ============================================
+
 $dayIndex = intval($data['day_index']);
 $time = trim($data['time']);
-$title = trim($data['title']);
+
+// ✅ IMPORTANT : Nettoyer le titre pour éviter XSS
+$title = cleanEventTitle($data['title']);
+
+// Vérifier que le titre nettoyé n'est pas vide
+if (empty($title)) {
+    sendResponse(false, ['error' => 'Le titre ne peut pas être vide ou contenir uniquement des balises HTML'], 400);
+}
+
+// Vérifier les patterns dangereux restants
+if (containsDangerousChars($title)) {
+    sendResponse(false, ['error' => 'Le titre contient des éléments non autorisés'], 400);
+}
+
 $color = trim($data['color']);
 $duration = floatval($data['duration']);
 
-// Insérer en base de données
+// ============================================
+// INSÉRER EN BASE DE DONNÉES
+// ============================================
+
 try {
     $db = getConnection();
     
@@ -101,7 +121,7 @@ try {
     $req->bindParam(':user_id', $userId, PDO::PARAM_INT);
     $req->bindParam(':day_index', $dayIndex, PDO::PARAM_INT);
     $req->bindParam(':time', $time, PDO::PARAM_STR);
-    $req->bindParam(':title', $title, PDO::PARAM_STR);
+    $req->bindParam(':title', $title, PDO::PARAM_STR);  // Titre nettoyé
     $req->bindParam(':color', $color, PDO::PARAM_STR);
     $req->bindParam(':duration', $duration);
     
@@ -119,7 +139,7 @@ try {
             'user_id' => $userId,
             'day_index' => $dayIndex,
             'time' => $time,
-            'title' => $title,
+            'title' => $title,  // Titre nettoyé retourné
             'color' => $color,
             'duration' => $duration
         ]

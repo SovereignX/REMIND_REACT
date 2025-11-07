@@ -21,10 +21,19 @@ const Profile = () => {
     <div className="profile-container">
       <div className="profile-info">
         <h1>Mon Profil</h1>
-        <p><strong>Prénom :</strong> {user.prenom}</p>
-        <p><strong>Nom :</strong> {user.nom}</p>
-        <p><strong>Email :</strong> {user.email}</p>
-        <p><strong>Membre depuis :</strong> {new Date(user.created_at).toLocaleDateString()}</p>
+        <p>
+          <strong>Prénom :</strong> {user.prenom}
+        </p>
+        <p>
+          <strong>Nom :</strong> {user.nom}
+        </p>
+        <p>
+          <strong>Email :</strong> {user.email}
+        </p>
+        <p>
+          <strong>Membre depuis :</strong>{" "}
+          {new Date(user.created_at).toLocaleDateString()}
+        </p>
       </div>
       <div className="profile-content">
         <h2>Vos statistiques</h2>
