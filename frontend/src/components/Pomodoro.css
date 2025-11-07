@@ -1,42 +1,269 @@
+/* ============================================
+   POMODORO - Container Principal
+   ============================================ */
 .pomodoro-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 2rem;
   max-width: 600px;
   margin: 0 auto;
+  min-height: calc(100vh - 160px);
 }
 
+/* ============================================
+   POMODORO - Titres
+   ============================================ */
+.pomodoro-container h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0.5rem 0 1.5rem; /* Réduit l'espacement */
+  text-transform: capitalize;
+  background: #936e9e;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pomodoro-container h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #718096;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ============================================
+   TIMER CIRCULAIRE
+   ============================================ */
 .circle-timer {
-  margin: 2rem 0;
+  margin: 1.5rem 0 2rem; /* Réduit de 2rem à 1.5rem */
+  animation: fadeIn 0.5s ease-out;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   BOUTONS POMODORO - Style cohérent avec le site
+   ============================================ */
 .pomodoro-button {
-  background-color: #000;
-  color: #fff;
-  padding: 10px 20px;
-  font-size: 1rem;
-  cursor: pointer;
-  border: none;
-  margin-top: 1rem;
-  border-radius: 4px;
-  min-width: 120px;
-  transition: background-color 0.2s;
+    background-color: #936e9e;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    min-width: 180px;
 }
 
-.pomodoro-button:hover {
-  background-color: #333;
+.pomodoro-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #8272ac 0%, #9c88c1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(147, 110, 158, 0.4);
+}
+
+.pomodoro-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(147, 110, 158, 0.3);
 }
 
 .pomodoro-button:disabled {
-  background-color: #999;
+  background: linear-gradient(135deg, #9e9e9e 0%, #bdbdbd 100%);
   cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+  transform: none;
 }
 
+/* ============================================
+   BOUTON SOUND TOGGLE
+   ============================================ */
+.sound-toggle-button {
+  margin-top: 1rem;
+  padding: 0.50rem;
+  background: rgb(255, 253, 253);
+  color: #936e9e;
+  border: 2px solid #936e9e;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sound-toggle-button:hover {
+  border-color: #936e9e;
+  color : #75318a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(147, 110, 158, 0.2);
+}
+
+.sound-toggle-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* État du son activé */
+.sound-toggle-button[aria-label*="Désactiver"] {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border-color: #28a745;
+  color: #28a745;
+}
+
+.sound-toggle-button[aria-label*="Désactiver"]:hover {
+  background: linear-gradient(135deg, #c3e6cb 0%, #b1dfbb 100%);
+  border-color: #218838;
+}
+
+/* ============================================
+   CONTAINER DE BOUTONS
+   ============================================ */
+.pomodoro-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 250px;
+}
+
+/* ============================================
+   PAGE CONTAINER - Suppression du style redondant
+   ============================================ */
 .page-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 768px) {
+  .pomodoro-container {
+    padding: 1.5rem 1rem;
+    min-height: calc(100vh - 120px);
+  }
+
+  .pomodoro-container h1 {
+    font-size: 2rem;
+    margin: 0.5rem 0 1rem;
+  }
+
+  .pomodoro-container h2 {
+    font-size: 1.1rem;
+  }
+
+  .circle-timer {
+    margin: 1rem 0 1.5rem;
+  }
+
+  .pomodoro-button {
+    padding: 0.75rem 1.75rem;
+    font-size: 1rem;
+    min-width: 120px;
+  }
+
+  .sound-toggle-button {
+    padding: 0.625rem 1rem;
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pomodoro-container {
+    padding: 1rem;
+  }
+
+  .pomodoro-container h1 {
+    font-size: 1.75rem;
+  }
+
+  .pomodoro-container h2 {
+    font-size: 1rem;
+  }
+
+  .pomodoro-button {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .sound-toggle-button {
+    padding: 0.5rem 0.875rem;
+    font-size: 1.1rem;
+    min-width: 60px;
+  }
+}
+
+/* ============================================
+   ANIMATIONS RÉDUITES
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .circle-timer {
+    animation: none;
+  }
+
+  .pomodoro-button,
+  .sound-toggle-button {
+    transition: none;
+  }
+
+  .pomodoro-button:hover,
+  .sound-toggle-button:hover {
+    transform: none;
+  }
+}
+
+/* ============================================
+   ÉTAT DE LA SESSION
+   ============================================ */
+.phase-work {
+  color: #e53e3e;
+}
+
+.phase-break {
+  color: #38a169;
+}
+
+.phase-longbreak {
+  color: #3182ce;
+}
+
+/* Appliqué dynamiquement au titre de phase */
+.pomodoro-container h1.phase-work {
+  background: linear-gradient(135deg, #e53e3e 0%, #fc8181 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pomodoro-container h1.phase-break {
+  background: linear-gradient(135deg, #38a169 0%, #68d391 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pomodoro-container h1.phase-longbreak {
+  background: linear-gradient(135deg, #3182ce 0%, #63b3ed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

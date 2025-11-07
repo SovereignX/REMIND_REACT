@@ -15,6 +15,7 @@ const navigationOptions = [
     label: "Tâches",
     path: "/taches",
     description: "Evaluez vos tâches et gérez votre temps",
+    disabled: true,
   },
   {
     label: "Pomodoro",
