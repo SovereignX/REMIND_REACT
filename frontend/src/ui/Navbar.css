@@ -18,7 +18,7 @@ nav {
 }
 
 /* ============================================
-   LOGO
+   LOGO - Plus professionnel, sans mouvement
    ============================================ */
 .nav-left {
   display: flex;
@@ -33,14 +33,32 @@ nav {
   font-weight: 700;
   cursor: pointer;
   padding: 0.5rem 1rem;
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   letter-spacing: 0.05em;
+  position: relative;
 }
 
+/* Logo plus professionnel - effet subtil au survol */
 .logo-btn:hover {
-  transform: scale(1.05);
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  opacity: 0.9;
+}
+
+/* Suppression de l'effet de scale pour un rendu plus pro */
+.logo-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 1rem;
+  right: 1rem;
+  height: 2px;
+  background: white;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.logo-btn:hover::after {
+  transform: scaleX(1);
 }
 
 /* ============================================
@@ -77,31 +95,30 @@ nav {
   white-space: nowrap;
 }
 
-/* Bouton Connexion - Style simple */
+/* Bouton Connexion - INVERSÉ - maintenant en blanc */
 .nav-btn-login {
-  background: transparent;
-  color: white;
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.nav-btn-login:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: white;
-  transform: translateY(-2px);
-}
-
-/* Bouton Inscription - Style mis en avant */
-.nav-btn-register {
   background: white;
   color: #936e9e;
-  border-color: white;
+  border: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.nav-btn-register:hover {
+.nav-btn-login:hover {
   background: #f0f0f0;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Bouton Inscription - INVERSÉ - maintenant transparent */
+.nav-btn-register {
+  background: transparent;
+  color: white;
+  border: none;
+}
+
+.nav-btn-register:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
 }
 
 /* Bouton Profil */
@@ -132,6 +149,24 @@ nav {
 }
 
 /* ============================================
+   ALIGNEMENT DES ICÔNES AVEC LE TEXTE
+   ============================================ */
+.nav-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-btn-icon svg {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.nav-btn-icon span {
+  line-height: 1;
+}
+
+/* ============================================
    RESPONSIVE MOBILE
    ============================================ */
 @media (max-width: 768px) {
@@ -144,6 +179,10 @@ nav {
   .logo-btn {
     font-size: 1.25rem;
     padding: 0.25rem 0.5rem;
+  }
+
+  .logo-btn::after {
+    display: none;
   }
 
   .nav-right {
@@ -180,21 +219,11 @@ nav {
 }
 
 /* ============================================
-   ANIMATIONS
+   ANIMATIONS (suppression du slideDown)
    ============================================ */
-@keyframes slideDown {
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
+/* Animation plus subtile pour un rendu professionnel */
 header {
-  animation: slideDown 0.3s ease-out;
+  opacity: 1;
 }
 
 /* ============================================
@@ -235,15 +264,8 @@ header {
 }
 
 /* ============================================
-   VARIANTES SUPPLÉMENTAIRES (optionnel)
+   VARIANTES SUPPLÉMENTAIRES
    ============================================ */
-
-/* Version avec icônes (si vous ajoutez des icônes plus tard) */
-.nav-btn-icon {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
 
 /* Version badge pour notifications */
 .nav-btn-badge {

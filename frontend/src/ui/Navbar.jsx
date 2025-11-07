@@ -29,24 +29,28 @@ const Navbar = ({ user, onLogout }) => {
               >
                 Mon profil
               </button>
-              <button className="nav-btn nav-btn-logout" onClick={onLogout}>
-                <LogOut /> Déconnexion
+              <button
+                className="nav-btn nav-btn-logout nav-btn-icon"
+                onClick={onLogout}
+              >
+                <LogOut size={18} />
+                <span>Déconnexion</span>
               </button>
             </>
           ) : (
             <>
               <button
-                className="nav-btn nav-btn-login"
-                onClick={() => navigate("/connexion?mode=login")}
-              >
-                <LogIn />
-                Connexion
-              </button>
-              <button
                 className="nav-btn nav-btn-register"
                 onClick={() => navigate("/connexion?mode=register")}
               >
                 Inscription
+              </button>
+              <button
+                className="nav-btn nav-btn-login nav-btn-icon"
+                onClick={() => navigate("/connexion?mode=login")}
+              >
+                <LogIn size={18} />
+                <span>Connexion</span>
               </button>
             </>
           )}
