@@ -33,23 +33,26 @@ const Home = () => {
         <h1 className="home-title">RE:MIND</h1>
         <div className="home-description">
           <p>
-            Le timeblocking (Planning) consiste à planifier sa journée en
-            réservant des plages horaires précises à chaque tâche, ce qui permet
-            de mieux organiser son temps et de limiter les distractions.
+            Le timeblocking (<span className="keyword">Planning</span>) consiste
+            à planifier sa journée en réservant des plages horaires précises à
+            chaque tâche, ce qui permet de mieux organiser son temps et de
+            limiter les distractions.
           </p>
           <p>
-            Le timeboxing (Tâches), quant à lui, fixe une durée maximale pour
-            accomplir une tâche donnée, obligeant à rester concentré et à
-            prioriser l’essentiel. Ces deux méthodes aident à évaluer plus
-            justement le temps réellement nécessaire à ses activités.
+            Le timeboxing (<span className="keyword">Tâches</span>), quant à
+            lui, fixe une durée maximale pour accomplir une tâche donnée,
+            obligeant à rester concentré et à prioriser l'essentiel. Ces deux
+            méthodes aident à évaluer plus justement le temps réellement
+            nécessaire à ses activités.
           </p>
           <p>
-            Le Pomodoro, lui, découpe le travail en sessions courtes de 25
-            minutes suivies de pauses, favorisant la concentration tout en
-            évitant la fatigue mentale. Ces approches complémentaires optimisent
-            la gestion du temps et la productivité.
+            Le <span className="keyword">Pomodoro</span>, lui, découpe le
+            travail en sessions courtes de 25 minutes suivies de pauses,
+            favorisant la concentration tout en évitant la fatigue mentale. Ces
+            approches complémentaires optimisent la gestion du temps et la
+            productivité.
           </p>
-          <p>
+          <p className="home-cta">
             Grâce à RE:MIND, essayez-les, et découvrez à quel point vos journées
             peuvent devenir fluides et satisfaisantes !
           </p>
@@ -62,6 +65,7 @@ const Home = () => {
               label={option.label}
               tooltip={option.description}
               onClick={() => navigate(option.path)}
+              disabled={option.disabled}
             />
           ))}
         </div>

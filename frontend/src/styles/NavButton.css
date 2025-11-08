@@ -1,37 +1,91 @@
 .button-wrapper {
-    position: relative;
-    display: inline-block;
-  }
-  
+  position: relative;
+  display: inline-block;
+}
+
+.nav-button {
+  background-color: #936e9e;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  min-width: 180px;
+}
+
+.nav-button:hover:not(:disabled) {
+  background-color: #8272ac;
+  transform: translateY(-2px);
+}
+
+.nav-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* ============================================
+   BOUTON DÉSACTIVÉ - Style grisé
+   ============================================ */
+.nav-button-disabled {
+  background-color: #b0b0b0 !important;
+  color: #f0f0f0 !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.nav-button-disabled:hover {
+  background-color: #b0b0b0 !important;
+  transform: none !important;
+}
+
+.info-icon {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #fff;
+  color: #6200ea;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  transition: transform 0.2s ease;
+}
+
+.info-icon:hover {
+  transform: scale(1.1);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
   .nav-button {
-    background-color: #936e9e;
-    color: white;
-    border: none;
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    min-width: 180px;
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+    min-width: 150px;
   }
-  .nav-button-disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-  .nav-button:hover {
-    background-color: #8272ac;;
-  }
-  
+
   .info-icon {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    background-color: #fff;
-    color: #6200ea;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 22px;
+    height: 22px;
+    font-size: 0.9rem;
   }
+}
+
+@media (max-width: 480px) {
+  .nav-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    min-width: 120px;
+  }
+
+  .info-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 0.85rem;
+  }
+}

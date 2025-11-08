@@ -30,6 +30,23 @@
   box-sizing: border-box;
 }
 
+/* ============================================
+   DERNIER PARAGRAPHE EN GRAS
+   ============================================ */
+.home-cta {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #2d3748;
+}
+
+/* ============================================
+   MOTS-CLÉS EN VIOLET
+   ============================================ */
+.keyword {
+  color: #936e9e;
+  font-weight: 600;
+}
+
 .navigation-container {
   display: flex;
   flex-wrap: wrap;
@@ -51,6 +68,10 @@
   .home-description {
     max-width: 700px;
     font-size: 0.95rem;
+  }
+
+  .home-cta {
+    font-size: 1.05rem;
   }
 }
 
@@ -87,6 +108,10 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
     hyphens: auto;
+  }
+
+  .home-cta {
+    font-size: 1.05rem;
   }
 
   .navigation-container {
@@ -126,6 +151,10 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
     hyphens: auto;
+  }
+
+  .home-cta {
+    font-size: 1rem;
   }
 
   .navigation-container {
@@ -172,6 +201,10 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
     hyphens: auto;
+  }
+
+  .home-cta {
+    font-size: 0.95rem;
   }
 
   .navigation-container {

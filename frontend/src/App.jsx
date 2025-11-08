@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import AuthForm from "./components/AuthenticationForm";
 import Home from "./components/Home";
 import Pomodoro from "./components/Pomodoro";
@@ -13,11 +14,31 @@ export default function App() {
       path: "/",
       element: <Layout />,
       children: [
+        // Routes publiques
         { index: true, element: <Home /> },
-        { path: "/pomodoro", element: <Pomodoro /> },
         { path: "/connexion", element: <AuthForm /> },
-        { path: "/planning", element: <Planning /> },
-        { path: "/profil", element: <Profile /> },
+
+        // Routes protégées - nécessitent une authentification
+        {
+          path: "/pomodoro",
+          element: <Pomodoro />,
+        },
+        {
+          path: "/planning",
+          element: (
+            <ProtectedRoute>
+              <Planning />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/profil",
+          element: (
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          ),
+        },
       ],
     },
   ]);
