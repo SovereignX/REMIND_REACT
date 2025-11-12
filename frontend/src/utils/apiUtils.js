@@ -205,7 +205,7 @@ export const eventsAPI = {
   },
 
   async delete(eventId) {
-    return post(endpoints.events.delete, { id: eventId });
+    return post(endpoints.events.delete, { event_id: eventId });
   },
 
   async saveAll(events) {

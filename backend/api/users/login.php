@@ -31,11 +31,11 @@ if (!$email) {
 try {
     $db = getConnection();
     
-    // Requête préparée
+    // ✅ Requête préparée avec les BONNES colonnes
     $req = $db->prepare(
-        "SELECT id, email, password, nom, prenom 
+        "SELECT user_id, email_address, password_hash, last_name, first_name 
          FROM users 
-         WHERE email = :email 
+         WHERE email_address = :email 
          LIMIT 1"
     );
     $req->bindParam(':email', $email, PDO::PARAM_STR);
@@ -43,30 +43,34 @@ try {
     
     $user = $req->fetch(PDO::FETCH_ASSOC);
     
-    // Vérifier utilisateur et mot de passe
-    if (!$user || !password_verify($password, $user["password"])) {
+    // ✅ Vérifier utilisateur et mot de passe
+    if (!$user || !password_verify($password, $user["password_hash"])) {
         sendResponse(false, ['message' => 'Email ou mot de passe incorrect'], 401);
     }
     
-    // Créer la session avec les données BRUTES de la BDD
-    setAuthUser($user["id"], [
-        'email' => $user["email"],
-        'nom' => $user["nom"],
-        'prenom' => $user["prenom"]
+    // ✅ Créer la session avec les données BRUTES de la BDD
+    setAuthUser($user["user_id"], [
+        'email_address' => $user["email_address"],
+        'last_name' => $user["last_name"],
+        'first_name' => $user["first_name"]
     ]);
     
     // Supprimer le mot de passe de la réponse
-    unset($user['password']);
+    unset($user['password_hash']);
     
     // ✅ json_encode() s'occupe de l'échappement automatiquement
     sendResponse(true, [
         'message' => 'Connexion réussie',
-        'userId' => (int)$user["id"],
+        'userId' => (int)$user["user_id"],
         'user' => [
-            'id' => (int)$user["id"],
-            'email' => $user["email"],
-            'nom' => $user["nom"],
-            'prenom' => $user["prenom"]
+            'id' => (int)$user["user_id"],
+            'user_id' => (int)$user["user_id"],
+            'email' => $user["email_address"],
+            'email_address' => $user["email_address"],
+            'nom' => $user["last_name"], // backward compatibility
+            'last_name' => $user["last_name"],
+            'prenom' => $user["first_name"], // backward compatibility
+            'first_name' => $user["first_name"]
         ]
     ], 200);
     
