@@ -8,7 +8,7 @@ require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/auth.php';
 require_once '../../utils/days.php';
-require_once '../../utils/validation.php';  // ← NOUVEAU
+require_once '../../utils/validation.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -118,8 +118,12 @@ try {
     $req = $db->prepare($sql);
     $req->execute($params);
     
-    // Récupérer l'événement mis à jour
-    $getReq = $db->prepare("SELECT * FROM events WHERE id = :id");
+    // ✅ CORRECTION : Sélectionner uniquement les colonnes nécessaires
+    $getReq = $db->prepare(
+        "SELECT id, user_id, day_index, time, title, color, duration, created_at, updated_at 
+         FROM events 
+         WHERE id = :id"
+    );
     $getReq->bindParam(':id', $eventId, PDO::PARAM_INT);
     $getReq->execute();
     $updatedEvent = $getReq->fetch(PDO::FETCH_ASSOC);
