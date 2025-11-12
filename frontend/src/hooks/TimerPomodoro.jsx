@@ -79,7 +79,7 @@ export function usePomodoroTimer() {
     setIsRunning((prev) => !prev);
   }, []);
 
-  // Réinitialiser le timerS
+  // Réinitialiser le timer
   const resetTimer = useCallback(() => {
     clearInterval(intervalRef.current);
     setIsRunning(false);
