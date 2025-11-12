@@ -62,7 +62,7 @@ const PlanningInteractif = () => {
   );
   const hourOffset = timeRanges[selectedRangeIndex].start;
 
-  // 🔁 Load events on mount
+  // Charger les événements au montage
   useEffect(() => {
     loadAllEvents();
   }, []);
@@ -71,11 +71,11 @@ const PlanningInteractif = () => {
     try {
       // Convertir les événements pour l'API
       const eventsForAPI = events.map((event) => ({
-        day_index: event.day_index, // ✅ Utiliser day_index
-        time: allHours[event.time],
-        title: event.title,
-        color: event.color,
-        duration: event.duration * 0.5, // Convertir steps en heures
+        weekday_index: event.weekday_index,
+        start_time: allHours[event.time],
+        event_title: event.event_title,
+        event_color: event.event_color,
+        duration_hours: event.duration * 0.5, // Convertir steps en heures
       }));
 
       const data = await eventsAPI.saveAll(eventsForAPI);
@@ -95,11 +95,14 @@ const PlanningInteractif = () => {
     try {
       const data = await eventsAPI.getAll();
       if (data.success) {
-        // Les événements arrivent avec day_index (0-6) directement
+        // Les événements arrivent avec weekday_index (0-6) directement
         const convertedEvents = data.events.map((event) => ({
-          ...event,
-          time: allHours.indexOf(event.time), // Convertir HH:MM en index
-          duration: Math.round(event.duration * 2), // Convertir heures en steps
+          event_id: event.event_id,
+          weekday_index: event.weekday_index,
+          time: allHours.indexOf(event.start_time), // Convertir HH:MM en index
+          event_title: event.event_title,
+          event_color: event.event_color,
+          duration: Math.round(event.duration_hours * 2), // Convertir heures en steps
         }));
         setEvents(convertedEvents);
         console.log("Planning chargé:", convertedEvents);
@@ -130,14 +133,14 @@ const PlanningInteractif = () => {
     const safeDuration = Math.min(tempDuration, maxSteps);
 
     const newEvent = {
-      day_index: modalData.day, // ✅ Envoyer l'index directement (0-6)
-      time: allHours[modalData.hour],
-      title: tempTitle,
-      color: tempColor,
-      duration: safeDuration * 0.5, // Convertir steps en heures
+      weekday_index: modalData.day,
+      start_time: allHours[modalData.hour],
+      event_title: tempTitle,
+      event_color: tempColor,
+      duration_hours: safeDuration * 0.5, // Convertir steps en heures
     };
 
-    console.log("Création événement:", newEvent); // Debug
+    console.log("Création événement:", newEvent);
 
     try {
       const response = await eventsAPI.add(newEvent);
@@ -145,9 +148,12 @@ const PlanningInteractif = () => {
         setEvents([
           ...events,
           {
-            ...response.event,
-            time: modalData.hour, // Index pour l'affichage
-            duration: safeDuration, // En steps pour l'affichage
+            event_id: response.event.event_id,
+            weekday_index: response.event.weekday_index,
+            time: modalData.hour,
+            event_title: response.event.event_title,
+            event_color: response.event.event_color,
+            duration: safeDuration,
           },
         ]);
         closeModal();
@@ -170,7 +176,7 @@ const PlanningInteractif = () => {
   const updateEventField = (field, value) => {
     setEvents(
       events.map((ev) =>
-        ev.id === editModalData.event.id ? { ...ev, [field]: value } : ev
+        ev.event_id === editModalData.event.event_id ? { ...ev, [field]: value } : ev
       )
     );
     setEditModalData((prev) => ({
@@ -180,11 +186,11 @@ const PlanningInteractif = () => {
   };
 
   const removeEvent = async () => {
-    const id = editModalData.event.id;
+    const eventId = editModalData.event.event_id;
     try {
-      const response = await eventsAPI.delete(id);
+      const response = await eventsAPI.delete(eventId);
       if (response.success) {
-        setEvents(events.filter((e) => e.id !== id));
+        setEvents(events.filter((e) => e.event_id !== eventId));
         closeEditModal();
       } else {
         alert("Erreur lors de la suppression");
@@ -204,20 +210,20 @@ const PlanningInteractif = () => {
     const eventId = parseInt(e.dataTransfer.getData("eventId"));
 
     const updatedEvents = events.map((ev) =>
-      ev.id === eventId ? { ...ev, day_index: dayIndex, time: hourIndex } : ev
+      ev.event_id === eventId ? { ...ev, weekday_index: dayIndex, time: hourIndex } : ev
     );
     setEvents(updatedEvents);
 
-    const updated = updatedEvents.find((e) => e.id === eventId);
+    const updated = updatedEvents.find((e) => e.event_id === eventId);
     if (updated) {
       try {
         await eventsAPI.update({
-          id: updated.id,
-          day_index: dayIndex, // ✅ Envoyer day_index
-          time: allHours[hourIndex],
-          title: updated.title,
-          color: updated.color,
-          duration: updated.duration * 0.5,
+          event_id: updated.event_id,
+          weekday_index: dayIndex,
+          start_time: allHours[hourIndex],
+          event_title: updated.event_title,
+          event_color: updated.event_color,
+          duration_hours: updated.duration * 0.5,
         });
       } catch (error) {
         console.error("Erreur handleDrop:", error);
@@ -229,7 +235,7 @@ const PlanningInteractif = () => {
   const handleResizeStart = (e, event) => {
     e.stopPropagation();
     setDisableDrag(true);
-    resizeRef.current = { eventId: event.id, startY: e.clientY };
+    resizeRef.current = { eventId: event.event_id, startY: e.clientY };
     document.addEventListener("mousemove", handleResizeMove);
     document.addEventListener("mouseup", handleResizeEnd);
   };
@@ -242,7 +248,7 @@ const PlanningInteractif = () => {
     if (steps !== 0) {
       setEvents((prev) =>
         prev.map((ev) => {
-          if (ev.id !== eventId) return ev;
+          if (ev.event_id !== eventId) return ev;
           const maxSteps = 48 - ev.time;
           const newDuration = Math.max(
             1,
@@ -252,12 +258,12 @@ const PlanningInteractif = () => {
           // Mettre à jour sur le serveur
           eventsAPI
             .update({
-              id: ev.id,
-              day_index: ev.day_index, // ✅ Envoyer day_index
-              time: allHours[ev.time],
-              title: ev.title,
-              color: ev.color,
-              duration: newDuration * 0.5,
+              event_id: ev.event_id,
+              weekday_index: ev.weekday_index,
+              start_time: allHours[ev.time],
+              event_title: ev.event_title,
+              event_color: ev.event_color,
+              duration_hours: newDuration * 0.5,
             })
             .catch((err) => console.error("Erreur resize:", err));
 
@@ -282,7 +288,7 @@ const PlanningInteractif = () => {
 
     const overlappingEvents = events.filter(
       (e) =>
-        e.day_index === dayIdx && // ✅ Utiliser day_index
+        e.weekday_index === dayIdx &&
         e.time <= globalHourIdx &&
         globalHourIdx < e.time + (e.duration || 1)
     );
@@ -307,21 +313,21 @@ const PlanningInteractif = () => {
               (event) =>
                 isStart(event) && (
                   <div
-                    key={event.id}
+                    key={event.event_id}
                     className="event-block"
                     draggable={!disableDrag}
-                    onDragStart={(e) => handleDragStart(e, event.id)}
+                    onDragStart={(e) => handleDragStart(e, event.event_id)}
                     onDoubleClick={(e) => {
                       e.stopPropagation();
                       openEditModal(event);
                     }}
                     style={{
-                      backgroundColor: event.color,
+                      backgroundColor: event.event_color,
                       height: `calc(${event.duration} * 40px - 4px)`,
                       width: `${100 / overlappingEvents.length}%`,
                     }}
                   >
-                    <div className="event-title">{event.title}</div>
+                    <div className="event-title">{event.event_title}</div>
                     <div className="event-time-range">
                       {formatTimeRange(
                         allHours[event.time],
@@ -450,13 +456,13 @@ const PlanningInteractif = () => {
             <h3>Éditer l'événement</h3>
             <input
               type="text"
-              value={editModalData.event.title}
-              onChange={(e) => updateEventField("title", e.target.value)}
+              value={editModalData.event.event_title}
+              onChange={(e) => updateEventField("event_title", e.target.value)}
             />
             <label>Couleur :</label>
             <select
-              value={editModalData.event.color}
-              onChange={(e) => updateEventField("color", e.target.value)}
+              value={editModalData.event.event_color}
+              onChange={(e) => updateEventField("event_color", e.target.value)}
             >
               {colorChoices.map((c, i) => (
                 <option key={i} value={c.value}>
@@ -466,7 +472,7 @@ const PlanningInteractif = () => {
             </select>
             <div
               className="color-preview"
-              style={{ backgroundColor: editModalData.event.color }}
+              style={{ backgroundColor: editModalData.event.event_color }}
             />
 
             <label>Durée :</label>
@@ -479,12 +485,12 @@ const PlanningInteractif = () => {
 
                 eventsAPI
                   .update({
-                    id: editModalData.event.id,
-                    day_index: editModalData.event.day_index, // ✅ Envoyer day_index
-                    time: allHours[editModalData.event.time],
-                    title: editModalData.event.title,
-                    color: editModalData.event.color,
-                    duration: clamped * 0.5,
+                    event_id: editModalData.event.event_id,
+                    weekday_index: editModalData.event.weekday_index,
+                    start_time: allHours[editModalData.event.time],
+                    event_title: editModalData.event.event_title,
+                    event_color: editModalData.event.event_color,
+                    duration_hours: clamped * 0.5,
                   })
                   .catch((err) => console.error("Erreur update:", err));
               }}

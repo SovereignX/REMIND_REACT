@@ -1,12 +1,12 @@
 <?php
 /**
- * API - Get user events
+ * API - Récupérer les événements de l'utilisateur
  * GET /api/events/get-events.php
  * 
- * Optional query params:
- * - weekday_index: filter by day (ex: ?weekday_index=0 for Monday)
- * - start_date: start date (format: YYYY-MM-DD)
- * - end_date: end date
+ * Paramètres query optionnels :
+ * - weekday_index : filtrer par jour (ex: ?weekday_index=0 pour Lundi)
+ * - start_date : date de début (format : YYYY-MM-DD)
+ * - end_date : date de fin
  */
 
 require_once '../../config/cors.php';
@@ -16,7 +16,7 @@ require_once '../../config/auth.php';
 header('Content-Type: application/json; charset=UTF-8');
 
 /**
- * Helper function for JSON responses
+ * Fonction helper pour les réponses JSON
  */
 function sendResponse($success, $data = [], $httpCode = 200) {
     http_response_code($httpCode);
@@ -24,16 +24,16 @@ function sendResponse($success, $data = [], $httpCode = 200) {
     exit;
 }
 
-// Get authenticated user
+// Récupérer l'utilisateur authentifié
 $userId = getUserId();
 if (!$userId) {
-    sendResponse(false, ['error' => 'Authentication required'], 401);
+    sendResponse(false, ['error' => 'Authentification requise'], 401);
 }
 
 try {
     $db = getConnection();
     
-    // Build query based on filters
+    // Construire la requête avec filtres
     $sql = "SELECT event_id, user_id, weekday_index, start_time, event_title, 
                    event_color, duration_hours, created_at, updated_at 
             FROM events 
@@ -41,19 +41,16 @@ try {
     
     $params = [':user_id' => $userId];
     
-    // Optional filter by weekday_index (also support old 'day_index' for backward compatibility)
-    $dayParam = isset($_GET['weekday_index']) ? $_GET['weekday_index'] : 
-                (isset($_GET['day_index']) ? $_GET['day_index'] : null);
-    
-    if ($dayParam !== null && is_numeric($dayParam)) {
-        $weekdayIndex = intval($dayParam);
+    // Filtre optionnel par weekday_index
+    if (isset($_GET['weekday_index']) && is_numeric($_GET['weekday_index'])) {
+        $weekdayIndex = intval($_GET['weekday_index']);
         if ($weekdayIndex >= 0 && $weekdayIndex <= 6) {
             $sql .= " AND weekday_index = :weekday_index";
             $params[':weekday_index'] = $weekdayIndex;
         }
     }
     
-    // Optional filter by date range
+    // Filtre optionnel par plage de dates
     if (isset($_GET['start_date']) && !empty($_GET['start_date'])) {
         $sql .= " AND created_at >= :start_date";
         $params[':start_date'] = $_GET['start_date'];
@@ -64,10 +61,10 @@ try {
         $params[':end_date'] = $_GET['end_date'];
     }
     
-    // Optimized sorting by weekday_index then start_time
+    // Tri optimisé par weekday_index puis start_time
     $sql .= " ORDER BY weekday_index ASC, start_time ASC";
     
-    // Execute query
+    // Exécuter la requête
     $req = $db->prepare($sql);
     foreach ($params as $key => $value) {
         $req->bindValue($key, $value);
@@ -76,20 +73,12 @@ try {
     
     $events = $req->fetchAll(PDO::FETCH_ASSOC);
     
-    // Format data
+    // Formater les données avec le bon typage
     foreach ($events as &$event) {
         $event['event_id'] = (int)$event['event_id'];
         $event['user_id'] = (int)$event['user_id'];
         $event['weekday_index'] = (int)$event['weekday_index'];
         $event['duration_hours'] = (float)$event['duration_hours'];
-        
-        // Add backward compatibility fields
-        $event['id'] = $event['event_id'];
-        $event['day_index'] = $event['weekday_index'];
-        $event['time'] = $event['start_time'];
-        $event['title'] = $event['event_title'];
-        $event['color'] = $event['event_color'];
-        $event['duration'] = $event['duration_hours'];
     }
     
     sendResponse(true, [
@@ -98,7 +87,7 @@ try {
     ], 200);
     
 } catch(PDOException $e) {
-    error_log("Error get-events: " . $e->getMessage());
-    sendResponse(false, ['error' => 'Error retrieving events'], 500);
+    error_log("Erreur get-events : " . $e->getMessage());
+    sendResponse(false, ['error' => 'Erreur lors de la récupération des événements'], 500);
 }
 ?>

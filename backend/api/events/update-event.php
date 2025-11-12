@@ -1,6 +1,6 @@
 <?php
 /**
- * API - Update an event
+ * API - Mettre à jour un événement
  * PUT /api/events/update-event.php
  */
 
@@ -18,34 +18,34 @@ function sendResponse($success, $data = [], $httpCode = 200) {
     exit;
 }
 
-// Get JSON data
+// Récupérer les données JSON
 $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    sendResponse(false, ['error' => 'Invalid JSON format'], 400);
+    sendResponse(false, ['error' => 'Format JSON invalide'], 400);
 }
 
-// Support both old 'id' and new 'event_id' for backward compatibility
-if (!isset($data['event_id']) && !isset($data['id'])) {
-    sendResponse(false, ['error' => 'Event ID required'], 400);
+// Vérifier la présence de l'ID
+if (!isset($data['event_id'])) {
+    sendResponse(false, ['error' => 'L\'ID de l\'événement est requis'], 400);
 }
 
-$eventId = isset($data['event_id']) ? intval($data['event_id']) : intval($data['id']);
+$eventId = intval($data['event_id']);
 
 if (!is_numeric($eventId)) {
-    sendResponse(false, ['error' => 'Event ID must be numeric'], 400);
+    sendResponse(false, ['error' => 'L\'ID de l\'événement doit être numérique'], 400);
 }
 
 $userId = getUserId();
 if (!$userId) {
-    sendResponse(false, ['error' => 'Authentication required'], 401);
+    sendResponse(false, ['error' => 'Authentification requise'], 401);
 }
 
 try {
     $db = getConnection();
     
-    // Check that event exists and belongs to user
+    // Vérifier que l'événement existe et appartient à l'utilisateur
     $checkReq = $db->prepare(
         "SELECT event_id 
          FROM events 
@@ -56,95 +56,79 @@ try {
     $checkReq->execute();
     
     if (!$checkReq->fetch()) {
-        sendResponse(false, ['error' => 'Event not found or access not authorized'], 404);
+        sendResponse(false, ['error' => 'Événement non trouvé ou accès non autorisé'], 404);
     }
     
-    // Build update query
+    // Construire la requête de mise à jour
     $updateFields = [];
     $params = [':event_id' => $eventId, ':user_id' => $userId];
     
-    // Validate and add fields to update
-    // Support both new and old field names for backward compatibility
-    $weekdayIndex = isset($data['weekday_index']) ? $data['weekday_index'] : 
-                    (isset($data['day_index']) ? $data['day_index'] : null);
-    
-    if ($weekdayIndex !== null) {
-        if (!isValidDayIndex($weekdayIndex)) {
-            sendResponse(false, ['error' => 'Invalid weekday index (must be between 0 and 6)'], 400);
+    // Valider et ajouter les champs à mettre à jour
+    if (isset($data['weekday_index'])) {
+        if (!isValidDayIndex($data['weekday_index'])) {
+            sendResponse(false, ['error' => 'Index de jour invalide (doit être entre 0 et 6)'], 400);
         }
         $updateFields[] = "weekday_index = :weekday_index";
-        $params[':weekday_index'] = intval($weekdayIndex);
+        $params[':weekday_index'] = intval($data['weekday_index']);
     }
     
-    $startTime = isset($data['start_time']) ? $data['start_time'] : 
-                 (isset($data['time']) ? $data['time'] : null);
-    
-    if ($startTime !== null) {
-        if (!preg_match('/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', $startTime)) {
-            sendResponse(false, ['error' => 'Invalid time format (HH:MM expected)'], 400);
+    if (isset($data['start_time'])) {
+        if (!preg_match('/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', $data['start_time'])) {
+            sendResponse(false, ['error' => 'Format d\'heure invalide (HH:MM attendu)'], 400);
         }
         $updateFields[] = "start_time = :start_time";
-        $params[':start_time'] = trim($startTime);
+        $params[':start_time'] = trim($data['start_time']);
     }
     
-    $eventTitle = isset($data['event_title']) ? $data['event_title'] : 
-                  (isset($data['title']) ? $data['title'] : null);
-    
-    if ($eventTitle !== null) {
-        // ✅ CLEAN the title
-        $cleanedTitle = cleanEventTitle($eventTitle);
+    if (isset($data['event_title'])) {
+        // ✅ NETTOYER le titre
+        $cleanedTitle = cleanEventTitle($data['event_title']);
         
         if (empty($cleanedTitle)) {
-            sendResponse(false, ['error' => 'Invalid title (empty or contains only tags)'], 400);
+            sendResponse(false, ['error' => 'Titre invalide (vide ou contient uniquement des balises)'], 400);
         }
         
         if (strlen($cleanedTitle) > 255) {
-            sendResponse(false, ['error' => 'Invalid title (max 255 characters)'], 400);
+            sendResponse(false, ['error' => 'Titre invalide (max 255 caractères)'], 400);
         }
         
         if (containsDangerousChars($cleanedTitle)) {
-            sendResponse(false, ['error' => 'Title contains unauthorized elements'], 400);
+            sendResponse(false, ['error' => 'Le titre contient des éléments non autorisés'], 400);
         }
         
         $updateFields[] = "event_title = :event_title";
         $params[':event_title'] = $cleanedTitle;
     }
     
-    $eventColor = isset($data['event_color']) ? $data['event_color'] : 
-                  (isset($data['color']) ? $data['color'] : null);
-    
-    if ($eventColor !== null) {
-        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $eventColor)) {
-            sendResponse(false, ['error' => 'Invalid color format (#RRGGBB expected)'], 400);
+    if (isset($data['event_color'])) {
+        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $data['event_color'])) {
+            sendResponse(false, ['error' => 'Format de couleur invalide (#RRGGBB attendu)'], 400);
         }
         $updateFields[] = "event_color = :event_color";
-        $params[':event_color'] = trim($eventColor);
+        $params[':event_color'] = trim($data['event_color']);
     }
     
-    $durationHours = isset($data['duration_hours']) ? $data['duration_hours'] : 
-                     (isset($data['duration']) ? $data['duration'] : null);
-    
-    if ($durationHours !== null) {
-        $duration = floatval($durationHours);
+    if (isset($data['duration_hours'])) {
+        $duration = floatval($data['duration_hours']);
         if ($duration <= 0 || $duration > 24) {
-            sendResponse(false, ['error' => 'Invalid duration (between 0.5 and 24 hours)'], 400);
+            sendResponse(false, ['error' => 'Durée invalide (entre 0.5 et 24 heures)'], 400);
         }
         $updateFields[] = "duration_hours = :duration_hours";
         $params[':duration_hours'] = $duration;
     }
     
-    // Check that there's at least one field to update
+    // Vérifier qu'il y a au moins un champ à mettre à jour
     if (empty($updateFields)) {
-        sendResponse(false, ['error' => 'No fields to update'], 400);
+        sendResponse(false, ['error' => 'Aucun champ à mettre à jour'], 400);
     }
     
-    // Execute update
+    // Exécuter la mise à jour
     $sql = "UPDATE events SET " . implode(", ", $updateFields) . 
            " WHERE event_id = :event_id AND user_id = :user_id";
     $req = $db->prepare($sql);
     $req->execute($params);
     
-    // ✅ CORRECTION: Select only necessary columns
+    // Récupérer l'événement mis à jour
     $getReq = $db->prepare(
         "SELECT event_id, user_id, weekday_index, start_time, event_title, 
                 event_color, duration_hours, created_at, updated_at 
@@ -155,27 +139,19 @@ try {
     $getReq->execute();
     $updatedEvent = $getReq->fetch(PDO::FETCH_ASSOC);
     
-    // Format data
+    // Formater les données
     $updatedEvent['event_id'] = (int)$updatedEvent['event_id'];
     $updatedEvent['user_id'] = (int)$updatedEvent['user_id'];
     $updatedEvent['weekday_index'] = (int)$updatedEvent['weekday_index'];
     $updatedEvent['duration_hours'] = (float)$updatedEvent['duration_hours'];
     
-    // Add backward compatibility fields
-    $updatedEvent['id'] = $updatedEvent['event_id'];
-    $updatedEvent['day_index'] = $updatedEvent['weekday_index'];
-    $updatedEvent['time'] = $updatedEvent['start_time'];
-    $updatedEvent['title'] = $updatedEvent['event_title'];
-    $updatedEvent['color'] = $updatedEvent['event_color'];
-    $updatedEvent['duration'] = $updatedEvent['duration_hours'];
-    
     sendResponse(true, [
-        'message' => 'Event updated successfully',
+        'message' => 'Événement mis à jour avec succès',
         'event' => $updatedEvent
     ], 200);
     
 } catch(PDOException $e) {
-    error_log("Error update-event: " . $e->getMessage());
-    sendResponse(false, ['error' => 'Error updating event'], 500);
+    error_log("Erreur update-event : " . $e->getMessage());
+    sendResponse(false, ['error' => 'Erreur lors de la mise à jour de l\'événement'], 500);
 }
 ?>

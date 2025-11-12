@@ -1,6 +1,6 @@
 <?php
 /**
- * API - Save complete schedule
+ * API - Sauvegarder le planning complet
  * POST /api/events/save-events.php
  */
 
@@ -19,70 +19,54 @@ function sendResponse($success, $data = [], $httpCode = 200) {
 }
 
 /**
- * Validate individual event
+ * Valider un événement individuel
  */
 function validateEvent($event, $index) {
     $errors = [];
     
-    // Support both new and old field names
-    $weekdayIndex = isset($event['weekday_index']) ? $event['weekday_index'] : 
-                    (isset($event['day_index']) ? $event['day_index'] : null);
-    
-    if ($weekdayIndex === null) {
-        $errors[] = "Event $index: weekday index is required";
-    } elseif (!isValidDayIndex($weekdayIndex)) {
-        $errors[] = "Event $index: invalid weekday index (must be between 0 and 6)";
+    if (!isset($event['weekday_index'])) {
+        $errors[] = "Événement $index : l'index du jour est requis";
+    } elseif (!isValidDayIndex($event['weekday_index'])) {
+        $errors[] = "Événement $index : index de jour invalide (doit être entre 0 et 6)";
     }
     
-    $startTime = isset($event['start_time']) ? $event['start_time'] : 
-                 (isset($event['time']) ? $event['time'] : null);
-    
-    if (empty($startTime) || !preg_match('/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', $startTime)) {
-        $errors[] = "Event $index: invalid time format";
+    if (empty($event['start_time']) || !preg_match('/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', $event['start_time'])) {
+        $errors[] = "Événement $index : format d'heure invalide";
     }
     
-    $eventTitle = isset($event['event_title']) ? $event['event_title'] : 
-                  (isset($event['title']) ? $event['title'] : null);
-    
-    if (empty($eventTitle) || strlen($eventTitle) > 255) {
-        $errors[] = "Event $index: invalid title";
+    if (empty($event['event_title']) || strlen($event['event_title']) > 255) {
+        $errors[] = "Événement $index : titre invalide";
     }
     
-    $eventColor = isset($event['event_color']) ? $event['event_color'] : 
-                  (isset($event['color']) ? $event['color'] : null);
-    
-    if (empty($eventColor) || !preg_match('/^#[0-9A-Fa-f]{6}$/', $eventColor)) {
-        $errors[] = "Event $index: invalid color format";
+    if (empty($event['event_color']) || !preg_match('/^#[0-9A-Fa-f]{6}$/', $event['event_color'])) {
+        $errors[] = "Événement $index : format de couleur invalide";
     }
     
-    $durationHours = isset($event['duration_hours']) ? $event['duration_hours'] : 
-                     (isset($event['duration']) ? $event['duration'] : null);
-    
-    if ($durationHours === null || $durationHours <= 0 || $durationHours > 24) {
-        $errors[] = "Event $index: invalid duration";
+    if (!isset($event['duration_hours']) || $event['duration_hours'] <= 0 || $event['duration_hours'] > 24) {
+        $errors[] = "Événement $index : durée invalide";
     }
     
     return $errors;
 }
 
-// Get JSON data
+// Récupérer les données JSON
 $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    sendResponse(false, ['error' => 'Invalid JSON format'], 400);
+    sendResponse(false, ['error' => 'Format JSON invalide'], 400);
 }
 
 if (!isset($data['events']) || !is_array($data['events'])) {
-    sendResponse(false, ['error' => 'The "events" field must be an array'], 400);
+    sendResponse(false, ['error' => 'Le champ "events" doit être un tableau'], 400);
 }
 
 $userId = getUserId();
 if (!$userId) {
-    sendResponse(false, ['error' => 'Authentication required'], 401);
+    sendResponse(false, ['error' => 'Authentification requise'], 401);
 }
 
-// Validate all events
+// Valider tous les événements
 $allErrors = [];
 foreach ($data['events'] as $index => $event) {
     $eventErrors = validateEvent($event, $index + 1);
@@ -96,18 +80,18 @@ if (!empty($allErrors)) {
 try {
     $db = getConnection();
     
-    // Start transaction
+    // Démarrer la transaction
     $db->beginTransaction();
     
-    // Delete all existing user events
+    // Supprimer tous les événements existants de l'utilisateur
     $deleteReq = $db->prepare("DELETE FROM events WHERE user_id = :user_id");
     $deleteReq->bindParam(':user_id', $userId, PDO::PARAM_INT);
     $deleteReq->execute();
     
     $deletedCount = $deleteReq->rowCount();
-    error_log("Deleted $deletedCount events for user $userId");
+    error_log("Supprimé $deletedCount événements pour l'utilisateur $userId");
     
-    // Prepare insert query
+    // Préparer la requête d'insertion
     $insertReq = $db->prepare(
         "INSERT INTO events (user_id, weekday_index, start_time, event_title, event_color, duration_hours) 
          VALUES (:user_id, :weekday_index, :start_time, :event_title, :event_color, :duration_hours)"
@@ -115,28 +99,27 @@ try {
     
     $insertedEvents = [];
     
-    // Insert all new events
+    // Insérer tous les nouveaux événements
     foreach ($data['events'] as $event) {
-        // Support both new and old field names
-        $weekdayIndex = intval(isset($event['weekday_index']) ? $event['weekday_index'] : $event['day_index']);
-        $startTime = trim(isset($event['start_time']) ? $event['start_time'] : $event['time']);
+        $weekdayIndex = intval($event['weekday_index']);
+        $startTime = trim($event['start_time']);
         
-        // ✅ CLEAN the title
-        $eventTitle = cleanEventTitle(isset($event['event_title']) ? $event['event_title'] : $event['title']);
+        // ✅ NETTOYER le titre
+        $eventTitle = cleanEventTitle($event['event_title']);
         
-        // Check that cleaned title is not empty
+        // Vérifier que le titre nettoyé n'est pas vide
         if (empty($eventTitle)) {
             $db->rollBack();
-            sendResponse(false, ['error' => 'A title cannot be empty or contain only HTML tags'], 400);
+            sendResponse(false, ['error' => 'Un titre ne peut pas être vide ou contenir uniquement des balises HTML'], 400);
         }
         
         if (containsDangerousChars($eventTitle)) {
             $db->rollBack();
-            sendResponse(false, ['error' => 'A title contains unauthorized elements'], 400);
+            sendResponse(false, ['error' => 'Un titre contient des éléments non autorisés'], 400);
         }
         
-        $eventColor = trim(isset($event['event_color']) ? $event['event_color'] : $event['color']);
-        $durationHours = floatval(isset($event['duration_hours']) ? $event['duration_hours'] : $event['duration']);
+        $eventColor = trim($event['event_color']);
+        $durationHours = floatval($event['duration_hours']);
         
         $insertReq->bindParam(':user_id', $userId, PDO::PARAM_INT);
         $insertReq->bindParam(':weekday_index', $weekdayIndex, PDO::PARAM_INT);
@@ -147,43 +130,37 @@ try {
         
         $insertReq->execute();
         
-        // Get generated ID and store event
+        // Récupérer l'ID généré et stocker l'événement
         $newId = $db->lastInsertId();
         $insertedEvents[] = [
             'event_id' => (int)$newId,
-            'id' => (int)$newId, // backward compatibility
             'user_id' => $userId,
             'weekday_index' => $weekdayIndex,
-            'day_index' => $weekdayIndex, // backward compatibility
             'start_time' => $startTime,
-            'time' => $startTime, // backward compatibility
             'event_title' => $eventTitle,
-            'title' => $eventTitle, // backward compatibility
             'event_color' => $eventColor,
-            'color' => $eventColor, // backward compatibility
-            'duration_hours' => $durationHours,
-            'duration' => $durationHours // backward compatibility
+            'duration_hours' => $durationHours
         ];
     }
     
-    // Commit transaction
+    // Valider la transaction
     $db->commit();
     
-    error_log("Schedule saved: " . count($insertedEvents) . " events inserted");
+    error_log("Planning sauvegardé : " . count($insertedEvents) . " événements insérés");
     
     sendResponse(true, [
-        'message' => 'Schedule saved successfully',
+        'message' => 'Planning sauvegardé avec succès',
         'deleted_count' => $deletedCount,
         'inserted_count' => count($insertedEvents),
         'events' => $insertedEvents
     ], 201);
     
 } catch(PDOException $e) {
-    // Rollback transaction on error
+    // Annuler la transaction en cas d'erreur
     if ($db->inTransaction()) {
         $db->rollBack();
     }
-    error_log("Error save-events: " . $e->getMessage());
-    sendResponse(false, ['error' => 'Error saving schedule'], 500);
+    error_log("Erreur save-events : " . $e->getMessage());
+    sendResponse(false, ['error' => 'Erreur lors de la sauvegarde du planning'], 500);
 }
 ?>

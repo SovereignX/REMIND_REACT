@@ -1,13 +1,13 @@
 <?php
 /**
- * API - Add an event
+ * API - Ajouter un événement
  * POST /api/events/add-event.php
  * 
- * Required JSON body:
+ * Corps JSON requis :
  * {
- *   "weekday_index": 0,       // 0=Monday, 1=Tuesday, ..., 6=Sunday
+ *   "weekday_index": 0,       // 0=Lundi, 1=Mardi, ..., 6=Dimanche
  *   "start_time": "09:00",
- *   "event_title": "Meeting",
+ *   "event_title": "Réunion",
  *   "event_color": "#b4a7d6",
  *   "duration_hours": 1.5
  * }
@@ -22,7 +22,7 @@ require_once '../../utils/validation.php';
 header("Content-Type: application/json; charset=UTF-8");
 
 /**
- * Helper function for JSON responses
+ * Fonction helper pour les réponses JSON
  */
 function sendResponse($success, $data = [], $httpCode = 200) {
     http_response_code($httpCode);
@@ -31,83 +31,83 @@ function sendResponse($success, $data = [], $httpCode = 200) {
 }
 
 /**
- * Data validation function
+ * Validation des données de l'événement
  */
 function validateEventData($data) {
     $errors = [];
     
-    // Validate weekday_index
+    // Valider weekday_index
     if (!isset($data['weekday_index'])) {
-        $errors[] = "Weekday index is required";
+        $errors[] = "L'index du jour est requis";
     } elseif (!isValidDayIndex($data['weekday_index'])) {
-        $errors[] = "Weekday index must be between 0 and 6 (0=Monday, 6=Sunday)";
+        $errors[] = "L'index du jour doit être entre 0 et 6 (0=Lundi, 6=Dimanche)";
     }
     
     if (empty($data['start_time']) || !preg_match('/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', $data['start_time'])) {
-        $errors[] = "Start time is required and must be in HH:MM format";
+        $errors[] = "L'heure de début est requise et doit être au format HH:MM";
     }
     
     if (empty($data['event_title']) || strlen($data['event_title']) > 255) {
-        $errors[] = "Event title is required (max 255 characters)";
+        $errors[] = "Le titre est requis (max 255 caractères)";
     }
     
     if (empty($data['event_color']) || !preg_match('/^#[0-9A-Fa-f]{6}$/', $data['event_color'])) {
-        $errors[] = "Color must be in hexadecimal format (#RRGGBB)";
+        $errors[] = "La couleur doit être au format hexadécimal (#RRGGBB)";
     }
     
     if (!isset($data['duration_hours']) || $data['duration_hours'] <= 0 || $data['duration_hours'] > 24) {
-        $errors[] = "Duration must be between 0.5 and 24 hours";
+        $errors[] = "La durée doit être entre 0.5 et 24 heures";
     }
     
     return $errors;
 }
 
-// Get JSON data
+// Récupérer les données JSON
 $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
-// Check JSON validity
+// Vérifier la validité du JSON
 if (json_last_error() !== JSON_ERROR_NONE) {
-    sendResponse(false, ['error' => 'Invalid JSON format'], 400);
+    sendResponse(false, ['error' => 'Format JSON invalide'], 400);
 }
 
-// Get authenticated user
+// Récupérer l'utilisateur authentifié
 $userId = getUserId();
 if (!$userId) {
-    sendResponse(false, ['error' => 'Authentication required'], 401);
+    sendResponse(false, ['error' => 'Authentification requise'], 401);
 }
 
-// Validate data
+// Valider les données
 $errors = validateEventData($data);
 if (!empty($errors)) {
     sendResponse(false, ['errors' => $errors], 400);
 }
 
 // ============================================
-// CLEAN DATA (XSS SECURITY)
+// NETTOYAGE DES DONNÉES (SÉCURITÉ XSS)
 // ============================================
 
 $weekdayIndex = intval($data['weekday_index']);
 $startTime = trim($data['start_time']);
 
-// ✅ IMPORTANT: Clean title to prevent XSS
+// ✅ IMPORTANT : Nettoyer le titre pour prévenir les XSS
 $eventTitle = cleanEventTitle($data['event_title']);
 
-// Check that cleaned title is not empty
+// Vérifier que le titre nettoyé n'est pas vide
 if (empty($eventTitle)) {
-    sendResponse(false, ['error' => 'Title cannot be empty or contain only HTML tags'], 400);
+    sendResponse(false, ['error' => 'Le titre ne peut pas être vide ou contenir uniquement des balises HTML'], 400);
 }
 
-// Check for remaining dangerous patterns
+// Vérifier qu'il ne contient pas de patterns dangereux
 if (containsDangerousChars($eventTitle)) {
-    sendResponse(false, ['error' => 'Title contains unauthorized elements'], 400);
+    sendResponse(false, ['error' => 'Le titre contient des éléments non autorisés'], 400);
 }
 
 $eventColor = trim($data['event_color']);
 $durationHours = floatval($data['duration_hours']);
 
 // ============================================
-// INSERT INTO DATABASE
+// INSERTION DANS LA BASE DE DONNÉES
 // ============================================
 
 try {
@@ -129,11 +129,11 @@ try {
     
     $eventId = $db->lastInsertId();
     
-    // Log for debug (optional)
-    error_log("Event created: ID=$eventId, Day=" . dayIndexToName($weekdayIndex) . " ($weekdayIndex), Time=$startTime");
+    // Log pour debug (optionnel)
+    error_log("Événement créé : ID=$eventId, Jour=" . dayIndexToName($weekdayIndex) . " ($weekdayIndex), Heure=$startTime");
     
     sendResponse(true, [
-        'message' => 'Event added successfully',
+        'message' => 'Événement ajouté avec succès',
         'event' => [
             'event_id' => $eventId,
             'user_id' => $userId,
@@ -146,7 +146,7 @@ try {
     ], 201);
     
 } catch(PDOException $e) {
-    error_log("Error add-event: " . $e->getMessage());
-    sendResponse(false, ['error' => 'Error adding event'], 500);
+    error_log("Erreur add-event : " . $e->getMessage());
+    sendResponse(false, ['error' => 'Erreur lors de l\'ajout de l\'événement'], 500);
 }
 ?>
