@@ -15,7 +15,7 @@ export function usePomodoroTimer() {
   const [phase, setPhase] = useState("Work");
   const intervalRef = useRef(null);
 
-  // Derived state
+  // State dérivé
   const totalDuration =
     phase === "Work"
       ? DURATIONS.WORK
@@ -23,7 +23,7 @@ export function usePomodoroTimer() {
       ? DURATIONS.SHORT_BREAK
       : DURATIONS.LONG_BREAK;
 
-  // Handle timer countdown
+  // Durée du timer
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
@@ -43,7 +43,7 @@ export function usePomodoroTimer() {
     return () => clearInterval(intervalRef.current);
   }, [isRunning]);
 
-  // Set up next timer cycle
+  // Mettre à jour le cycle et la phase
   const nextCycle = useCallback(() => {
     setIsRunning(false);
 
@@ -64,7 +64,7 @@ export function usePomodoroTimer() {
     }
   }, [cycle, phase]);
 
-  // Format time as MM:SS (Minutes:Seconds)
+  // Formater le temps en MM:SS
   const formatTime = useCallback((seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -74,12 +74,12 @@ export function usePomodoroTimer() {
     )}`;
   }, []);
 
-  // Toggle timer on/off
+  // on/off du timer
   const toggleTimer = useCallback(() => {
     setIsRunning((prev) => !prev);
   }, []);
 
-  // Reset timer to initial state
+  // Réinitialiser le timerS
   const resetTimer = useCallback(() => {
     clearInterval(intervalRef.current);
     setIsRunning(false);
