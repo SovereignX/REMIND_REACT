@@ -27,6 +27,7 @@ const colorChoices = [
   { name: "Orange", value: "#ff9800" },
   { name: "Violet", value: "#9c27b0" },
   { name: "Gris", value: "#607d8b" },
+  { name: "Rouge", value: "#f44336" },
 ];
 
 const durationOptions = [
@@ -34,6 +35,8 @@ const durationOptions = [
   { label: "1 heure", value: 2 },
   { label: "1h30", value: 3 },
   { label: "2 heures", value: 4 },
+  { label: "5 heures", value: 10 },
+  { label: "8 heures", value: 16 },
 ];
 
 const PlanningInteractif = () => {
@@ -176,7 +179,9 @@ const PlanningInteractif = () => {
   const updateEventField = (field, value) => {
     setEvents(
       events.map((ev) =>
-        ev.event_id === editModalData.event.event_id ? { ...ev, [field]: value } : ev
+        ev.event_id === editModalData.event.event_id
+          ? { ...ev, [field]: value }
+          : ev
       )
     );
     setEditModalData((prev) => ({
@@ -210,7 +215,9 @@ const PlanningInteractif = () => {
     const eventId = parseInt(e.dataTransfer.getData("eventId"));
 
     const updatedEvents = events.map((ev) =>
-      ev.event_id === eventId ? { ...ev, weekday_index: dayIndex, time: hourIndex } : ev
+      ev.event_id === eventId
+        ? { ...ev, weekday_index: dayIndex, time: hourIndex }
+        : ev
     );
     setEvents(updatedEvents);
 
@@ -370,7 +377,6 @@ const PlanningInteractif = () => {
           </select>
         </div>
         <div className="action-buttons">
-          <button onClick={loadAllEvents}>Charger</button>
           <button onClick={saveAllEvents}>Sauvegarder</button>
         </div>
       </div>
