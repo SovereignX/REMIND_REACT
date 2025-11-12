@@ -1,12 +1,12 @@
 <?php
 /**
- * Centralized session management
- * Ensures session is started only once
+ * Gestion centralisée des sessions
+ * S'assure que la session est démarrée une seule fois
  */
 
-// Start session if not already active
+// Démarrer la session si elle n'est pas déjà active
 if (session_status() === PHP_SESSION_NONE) {
-    // Secure session configuration
+    // Configuration sécurisée de la session
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
     ini_set('session.cookie_samesite', 'Lax');
@@ -15,34 +15,34 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 /**
- * Set authenticated user in session
+ * Définir l'utilisateur authentifié dans la session
+ * 
+ * @param int $userId ID de l'utilisateur
+ * @param array $userInfo Informations de l'utilisateur
  */
 function setAuthUser($userId, $userInfo = []) {
     $_SESSION['user_id'] = (int)$userId;
+    $_SESSION['email_address'] = $userInfo['email_address'] ?? null;
+    $_SESSION['last_name'] = $userInfo['last_name'] ?? null;
+    $_SESSION['first_name'] = $userInfo['first_name'] ?? null;
     
-    // Support both old and new field names
-    $_SESSION['email_address'] = $userInfo['email_address'] ?? $userInfo['email'] ?? null;
-    $_SESSION['last_name'] = $userInfo['last_name'] ?? $userInfo['nom'] ?? null;
-    $_SESSION['first_name'] = $userInfo['first_name'] ?? $userInfo['prenom'] ?? null;
-    
-    // Backward compatibility - also store old field names
-    $_SESSION['user_email'] = $_SESSION['email_address'];
-    $_SESSION['user_nom'] = $_SESSION['last_name'];
-    $_SESSION['user_prenom'] = $_SESSION['first_name'];
-    
-    // Regenerate session ID for security
+    // Régénérer l'ID de session pour la sécurité
     session_regenerate_id(true);
 }
 
 /**
- * Get user ID from session
+ * Récupérer l'ID de l'utilisateur depuis la session
+ * 
+ * @return int|null ID de l'utilisateur ou null si non connecté
  */
 function getAuthUserId() {
     return $_SESSION['user_id'] ?? null;
 }
 
 /**
- * Get all user info from session
+ * Récupérer toutes les informations utilisateur depuis la session
+ * 
+ * @return array|null Informations utilisateur ou null si non connecté
  */
 function getAuthUserInfo() {
     if (!isset($_SESSION['user_id'])) {
@@ -50,27 +50,24 @@ function getAuthUserInfo() {
     }
     
     return [
-        'id' => $_SESSION['user_id'],
         'user_id' => $_SESSION['user_id'],
-        'email' => $_SESSION['email_address'] ?? $_SESSION['user_email'] ?? null,
-        'email_address' => $_SESSION['email_address'] ?? $_SESSION['user_email'] ?? null,
-        'nom' => $_SESSION['last_name'] ?? $_SESSION['user_nom'] ?? null,
-        'last_name' => $_SESSION['last_name'] ?? $_SESSION['user_nom'] ?? null,
-        'prenom' => $_SESSION['first_name'] ?? $_SESSION['user_prenom'] ?? null,
-        'first_name' => $_SESSION['first_name'] ?? $_SESSION['user_prenom'] ?? null,
+        'email_address' => $_SESSION['email_address'] ?? null,
+        'last_name' => $_SESSION['last_name'] ?? null,
+        'first_name' => $_SESSION['first_name'] ?? null,
     ];
 }
 
 /**
- * Check if a user is authenticated
+ * Vérifier si un utilisateur est authentifié
+ * 
+ * @return bool True si authentifié, false sinon
  */
 function isAuthUser() {
     return isset($_SESSION['user_id']) && is_numeric($_SESSION['user_id']);
 }
 
-/**
- * Destroy user session
- */
+
+// Détruire la session utilisateur
 function destroyAuthSession() {
     $_SESSION = [];
     
@@ -79,5 +76,28 @@ function destroyAuthSession() {
     }
     
     session_destroy();
+}
+
+/**
+ * Alias pour la fonction getAuthUserId (compatibilité avec le code existant)
+ * 
+ * @return int|null ID de l'utilisateur
+ */
+function getUserId() {
+    return getAuthUserId();
+}
+
+/**
+ * Vérifier l'authentification et renvoyer une erreur 401 si non authentifié
+ */
+function requireAuth() {
+    if (!isAuthUser()) {
+        http_response_code(401);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Authentification requise'
+        ]);
+        exit;
+    }
 }
 ?>

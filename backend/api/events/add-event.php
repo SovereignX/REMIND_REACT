@@ -21,18 +21,16 @@ require_once '../../utils/validation.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
-/**
- * Fonction helper pour les réponses JSON
- */
+
+// Fonction helper pour les réponses JSON
 function sendResponse($success, $data = [], $httpCode = 200) {
     http_response_code($httpCode);
     echo json_encode(array_merge(['success' => $success], $data));
     exit;
 }
 
-/**
- * Validation des données de l'événement
- */
+
+// Validation des données de l'événement
 function validateEventData($data) {
     $errors = [];
     
@@ -72,7 +70,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 }
 
 // Récupérer l'utilisateur authentifié
-$userId = getUserId();
+$userId = getAuthUserId();
 if (!$userId) {
     sendResponse(false, ['error' => 'Authentification requise'], 401);
 }
@@ -83,14 +81,13 @@ if (!empty($errors)) {
     sendResponse(false, ['errors' => $errors], 400);
 }
 
-// ============================================
+
 // NETTOYAGE DES DONNÉES (SÉCURITÉ XSS)
-// ============================================
 
 $weekdayIndex = intval($data['weekday_index']);
 $startTime = trim($data['start_time']);
 
-// ✅ IMPORTANT : Nettoyer le titre pour prévenir les XSS
+// Nettoyer le titre pour prévenir les XSS
 $eventTitle = cleanEventTitle($data['event_title']);
 
 // Vérifier que le titre nettoyé n'est pas vide
@@ -106,9 +103,7 @@ if (containsDangerousChars($eventTitle)) {
 $eventColor = trim($data['event_color']);
 $durationHours = floatval($data['duration_hours']);
 
-// ============================================
 // INSERTION DANS LA BASE DE DONNÉES
-// ============================================
 
 try {
     $db = getConnection();
@@ -129,7 +124,7 @@ try {
     
     $eventId = $db->lastInsertId();
     
-    // Log pour debug (optionnel)
+    // Log pour debug
     error_log("Événement créé : ID=$eventId, Jour=" . dayIndexToName($weekdayIndex) . " ($weekdayIndex), Heure=$startTime");
     
     sendResponse(true, [

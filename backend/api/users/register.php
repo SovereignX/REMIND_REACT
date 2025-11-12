@@ -1,4 +1,18 @@
 <?php
+/**
+ * API - Inscription utilisateur
+ * POST /api/users/register.php
+ * 
+ * Corps JSON requis :
+ * {
+ *   "email": "user@example.com",
+ *   "password": "motdepasse",
+ *   "confirm": "motdepasse",
+ *   "last_name": "Nom",
+ *   "first_name": "Prénom"
+ * }
+ */
+
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/session.php';
@@ -16,85 +30,83 @@ $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
 if (json_last_error() !== JSON_ERROR_NONE) {
-    sendResponse(false, ['message' => 'Invalid JSON data'], 400);
+    sendResponse(false, ['message' => 'Données JSON invalides'], 400);
 }
 
-// ============================================
-// CLEANING & VALIDATION
-// ============================================
 
-// EMAIL: Use cleanEmail()
+// NETTOYAGE & VALIDATION
+
+
+// EMAIL : Utiliser cleanEmail()
 $email = cleanEmail($data['email'] ?? '');
 if (!$email) {
-    sendResponse(false, ['message' => "Invalid email format"], 400);
+    sendResponse(false, ['message' => "Format d'email invalide"], 400);
 }
 
-// LAST NAME & FIRST NAME: Use cleanName() - NOT htmlspecialchars!
-$lastName = cleanName($data['nom'] ?? $data['last_name'] ?? '');
-$firstName = cleanName($data['prenom'] ?? $data['first_name'] ?? '');
+// NOM & PRÉNOM : Utiliser cleanName() - PAS htmlspecialchars!
+$lastName = cleanName($data['last_name'] ?? '');
+$firstName = cleanName($data['first_name'] ?? '');
 
-// PASSWORD: Just trim, no cleaning (will be hashed)
+// MOT DE PASSE : Juste trim, pas de nettoyage (sera hashé)
 $password = trim($data['password'] ?? '');
 $confirm = trim($data['confirm'] ?? '');
 
-// ============================================
+
 // VALIDATION
-// ============================================
 
 $errors = [];
 
-// Email validation (already done by cleanEmail, but double check)
+// Validation email (déjà fait par cleanEmail, mais double vérification)
 if (empty($email)) {
-    $errors[] = "Email is required";
+    $errors[] = "L'email est requis";
 }
 
-// Password validation
+// Validation mot de passe
 $passwordCheck = validatePassword($password);
 if (!$passwordCheck['valid']) {
     $errors[] = $passwordCheck['error'];
 }
 
 if ($password !== $confirm) {
-    $errors[] = "Passwords do not match";
+    $errors[] = "Les mots de passe ne correspondent pas";
 }
 
-// Last name/first name validation
+// Validation nom/prénom
 if (empty($lastName)) {
-    $errors[] = "Last name is required";
+    $errors[] = "Le nom est requis";
 } elseif (containsDangerousChars($lastName)) {
-    $errors[] = "Last name contains unauthorized characters";
+    $errors[] = "Le nom contient des caractères non autorisés";
 }
 
 if (empty($firstName)) {
-    $errors[] = "First name is required";
+    $errors[] = "Le prénom est requis";
 } elseif (containsDangerousChars($firstName)) {
-    $errors[] = "First name contains unauthorized characters";
+    $errors[] = "Le prénom contient des caractères non autorisés";
 }
 
 if (!empty($errors)) {
     sendResponse(false, ['errors' => $errors], 400);
 }
 
-// ============================================
-// DATABASE INSERTION
-// ============================================
+
+// INSERTION DANS LA BASE DE DONNÉES
 
 try {
     $db = getConnection();
     
-    // Check email uniqueness
+    // Vérifier l'unicité de l'email
     $req = $db->prepare("SELECT user_id FROM users WHERE email_address = :email_address LIMIT 1");
     $req->bindParam(':email_address', $email, PDO::PARAM_STR);
     $req->execute();
     
     if ($req->fetch()) {
-        sendResponse(false, ['message' => 'This email is already in use'], 409);
+        sendResponse(false, ['message' => 'Cet email est déjà utilisé'], 409);
     }
     
-    // Hash password
+    // Hasher le mot de passe
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
     
-    // Insert user with CLEANED data (not HTML-escaped)
+    // Insérer l'utilisateur avec les données NETTOYÉES (pas échappées HTML)
     $req = $db->prepare(
         "INSERT INTO users (email_address, password_hash, last_name, first_name) 
          VALUES (:email_address, :password_hash, :last_name, :first_name)"
@@ -109,31 +121,27 @@ try {
     
     $userId = $db->lastInsertId();
     
-    // Create session
+    // Créer la session
     setAuthUser($userId, [
         'email_address' => $email,
         'last_name' => $lastName,
         'first_name' => $firstName
     ]);
     
-    // ✅ json_encode() escapes automatically for JSON
+    // json_encode() échappe automatiquement pour JSON
     sendResponse(true, [
-        'message' => 'Registration successful',
+        'message' => 'Inscription réussie',
         'userId' => (int)$userId,
         'user' => [
-            'id' => (int)$userId,
             'user_id' => (int)$userId,
-            'email' => $email,
             'email_address' => $email,
-            'nom' => $lastName, // backward compatibility
             'last_name' => $lastName,
-            'prenom' => $firstName, // backward compatibility
             'first_name' => $firstName
         ]
     ], 201);
     
 } catch(PDOException $e) {
-    error_log("Registration error: " . $e->getMessage());
-    sendResponse(false, ['message' => 'Server error'], 500);
+    error_log("Erreur inscription : " . $e->getMessage());
+    sendResponse(false, ['message' => 'Erreur serveur'], 500);
 }
 ?>

@@ -30,18 +30,18 @@
   box-sizing: border-box;
 }
 
-/* ============================================
-   DERNIER PARAGRAPHE EN GRAS
-   ============================================ */
+
+/* DERNIER PARAGRAPHE EN GRAS */
+
 .home-cta {
   font-weight: 700;
   font-size: 1.1rem;
   color: #2d3748;
 }
 
-/* ============================================
-   MOTS-CLÉS EN VIOLET
-   ============================================ */
+
+/* MOTS-CLÉS EN VIOLET */
+
 .keyword {
   color: #936e9e;
   font-weight: 600;
@@ -56,9 +56,9 @@
   margin-top: 2rem;
 }
 
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
+
+/* RESPONSIVE DESIGN */
+
 
 @media (max-width: 1024px) {
   .home-container {

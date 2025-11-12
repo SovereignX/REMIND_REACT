@@ -1,6 +1,6 @@
-/* ============================================
-   POMODORO - Container Principal
-   ============================================ */
+
+/* Container Principal */
+
 .pomodoro-container {
   display: flex;
   flex-direction: column;
@@ -12,9 +12,9 @@
   min-height: calc(100vh - 200px);
 }
 
-/* ============================================
-   POMODORO - Titres
-   ============================================ */
+
+/* Titres */
+
 .pomodoro-container h1 {
   font-size: 2.5rem;
   font-weight: 700;
@@ -36,9 +36,9 @@
   letter-spacing: 1px;
 }
 
-/* ============================================
-   TIMER CIRCULAIRE
-   ============================================ */
+
+/* TIMER CIRCULAIRE */
+
 .circle-timer {
   margin: 1rem 0 1.5rem;
   animation: fadeIn 0.5s ease-out;
@@ -55,9 +55,9 @@
   }
 }
 
-/* ============================================
-   BOUTONS POMODORO - Style cohérent avec le site
-   ============================================ */
+
+/* BOUTONS */
+
 .pomodoro-button {
   background-color: #936e9e;
   color: white;
@@ -89,9 +89,9 @@
   transform: none;
 }
 
-/* ============================================
-   BOUTON SOUND TOGGLE
-   ============================================ */
+
+/* BOUTON SOUND TOGGLE */
+
 .sound-toggle-button {
   margin-top: 0.75rem;
   padding: 0.5rem;
@@ -130,9 +130,9 @@
   border-color: #218838;
 }
 
-/* ============================================
-   CONTAINER DE BOUTONS
-   ============================================ */
+
+/* CONTAINER DE BOUTONS */
+
 .pomodoro-controls {
   display: flex;
   flex-direction: column;
@@ -142,9 +142,9 @@
   max-width: 250px;
 }
 
-/* ============================================
-   PAGE CONTAINER - Suppression du style redondant
-   ============================================ */
+
+/* PAGE CONTAINER */
+
 .page-container {
   min-height: calc(100vh - 200px);
   display: flex;
@@ -153,9 +153,9 @@
   justify-content: center;
 }
 
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
+
+/* RESPONSIVE DESIGN */
+
 @media (max-width: 768px) {
   .pomodoro-container {
     padding: 1rem;
@@ -218,9 +218,9 @@
   }
 }
 
-/* ============================================
-   ANIMATIONS RÉDUITES
-   ============================================ */
+
+/* ANIMATIONS RÉDUITES */
+
 @media (prefers-reduced-motion: reduce) {
   .circle-timer {
     animation: none;
@@ -237,9 +237,9 @@
   }
 }
 
-/* ============================================
-   ÉTAT DE LA SESSION
-   ============================================ */
+
+/* ÉTAT DE LA SESSION */
+
 .phase-work {
   color: #e53e3e;
 }

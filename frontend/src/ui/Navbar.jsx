@@ -22,7 +22,7 @@ const Navbar = ({ user, onLogout }) => {
         <div className="nav-right">
           {user ? (
             <>
-              <span className="user-name">Bonjour, {user.prenom}</span>
+              <span className="user-name">Bonjour, {user.first_name}</span>
               <button
                 className="nav-btn nav-btn-profile"
                 onClick={() => navigate("/profil")}
@@ -62,9 +62,9 @@ const Navbar = ({ user, onLogout }) => {
 
 Navbar.propTypes = {
   user: PropTypes.shape({
-    nom: PropTypes.string,
-    prenom: PropTypes.string,
-    email: PropTypes.string,
+    last_name: PropTypes.string,
+    first_name: PropTypes.string,
+    email_address: PropTypes.string,
   }),
   onLogout: PropTypes.func,
 };

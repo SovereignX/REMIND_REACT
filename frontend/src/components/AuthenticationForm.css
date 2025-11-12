@@ -1,6 +1,6 @@
-/* ============================================
-   AUTH FORM - Container
-   ============================================ */
+
+/* AUTH FORM - Container */
+
 .auth-container {
   min-height: calc(100vh - 200px);
   display: flex;
@@ -31,9 +31,9 @@
   }
 }
 
-/* ============================================
-   AUTH FORM - Header
-   ============================================ */
+
+/* AUTH FORM - Header */
+
 .auth-header {
   background: #936e9e;
   padding: 2rem;
@@ -54,14 +54,13 @@
   opacity: 0.95;
 }
 
-/* ============================================
-   AUTH FORM - Form
-   ============================================ */
+
+/* AUTH FORM - Form */
+
 .auth-form {
   padding: 2rem;
 }
 
-/* Correction de l'alignement des inputs dans le formulaire */
 .form-row {
   display: grid;
   grid-template-columns: 1fr;
@@ -91,9 +90,9 @@
   color: #e06666;
 }
 
-/* ============================================
-   AUTH FORM - Inputs
-   ============================================ */
+
+/* AUTH FORM - Inputs */
+
 .auth-form input {
   width: 100%;
   padding: 0.875rem 1rem;
@@ -132,9 +131,8 @@
   box-shadow: 0 0 0 4px rgba(224, 102, 102, 0.1) !important;
 }
 
-/* ============================================
-   PASSWORD INPUT WITH TOGGLE BUTTON
-   ============================================ */
+/* PASSWORD INPUT WITH TOGGLE BUTTON */
+
 .password-input-wrapper {
   position: relative;
   display: flex;
@@ -180,9 +178,9 @@
   outline-offset: 2px;
 }
 
-/* ============================================
-   AUTH FORM - Error Messages
-   ============================================ */
+
+/* AUTH FORM - Error Messages */
+
 .error-message {
   display: block;
   color: #e06666;
@@ -200,9 +198,9 @@
   text-align: center;
 }
 
-/* ============================================
-   AUTH FORM - Submit Button
-   ============================================ */
+
+/* AUTH FORM - Submit Button */
+
 .auth-submit-btn {
   width: 100%;
   padding: 1rem;
@@ -237,9 +235,7 @@
   transform: none;
 }
 
-/* ============================================
-   AUTH FORM - Toggle Mode
-   ============================================ */
+/* AUTH FORM - Toggle Mode */
 .auth-toggle {
   margin-top: 1.5rem;
   text-align: center;
@@ -273,9 +269,7 @@
   cursor: not-allowed;
 }
 
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
+/* RESPONSIVE DESIGN */
 @media (max-width: 575px) {
   .form-row {
     grid-template-columns: 1fr;
@@ -334,9 +328,9 @@
   }
 }
 
-/* ============================================
-   LOADING STATE
-   ============================================ */
+
+/* LOADING STATE */
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -355,9 +349,9 @@
   animation: spin 0.6s linear infinite;
 }
 
-/* ============================================
-   ACCESSIBILITY
-   ============================================ */
+
+/* ACCESSIBILITY */
+
 @media (prefers-reduced-motion: reduce) {
   .auth-card {
     animation: none;

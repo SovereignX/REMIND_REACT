@@ -1,6 +1,6 @@
-/* ============================================
-   NAVBAR - Header principal
-   ============================================ */
+
+/* NAVBAR - Header */
+
 header {
   position: sticky;
   top: 0;
@@ -17,9 +17,9 @@ nav {
   padding: 1rem 2rem;
 }
 
-/* ============================================
-   LOGO - Plus professionnel, sans mouvement
-   ============================================ */
+
+/* LOGO  */
+
 .nav-left {
   display: flex;
   align-items: center;
@@ -39,12 +39,11 @@ nav {
   position: relative;
 }
 
-/* Logo plus professionnel - effet subtil au survol */
+/* Logo - effet subtil au survol */
 .logo-btn:hover {
   opacity: 0.9;
 }
 
-/* Suppression de l'effet de scale pour un rendu plus pro */
 .logo-btn::after {
   content: '';
   position: absolute;
@@ -61,18 +60,18 @@ nav {
   transform: scaleX(1);
 }
 
-/* ============================================
-   NAVIGATION DROITE
-   ============================================ */
+
+/* NAVIGATION DROITE */
+
 .nav-right {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-/* ============================================
-   NOM UTILISATEUR
-   ============================================ */
+
+/* NOM UTILISATEUR */
+
 .user-name {
   color: white;
   font-weight: 500;
@@ -80,9 +79,9 @@ nav {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* ============================================
-   BOUTONS NAVIGATION
-   ============================================ */
+
+/* BOUTONS NAVIGATION */
+
 .nav-btn {
   padding: 0.6rem 1.2rem;
   font-size: 0.95rem;
@@ -95,7 +94,7 @@ nav {
   white-space: nowrap;
 }
 
-/* Bouton Connexion - INVERSÉ - maintenant en blanc */
+/* Bouton Connexion */
 .nav-btn-login {
   background: white;
   color: #936e9e;
@@ -109,7 +108,7 @@ nav {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Bouton Inscription - INVERSÉ - maintenant transparent */
+/* Bouton Inscription */
 .nav-btn-register {
   background: transparent;
   color: white;
@@ -148,9 +147,9 @@ nav {
   box-shadow: 0 4px 10px rgba(224, 102, 102, 0.4);
 }
 
-/* ============================================
-   ALIGNEMENT DES ICÔNES AVEC LE TEXTE
-   ============================================ */
+
+/* ALIGNEMENT DES ICÔNES AVEC LE TEXTE */
+
 .nav-btn-icon {
   display: inline-flex;
   align-items: center;
@@ -166,9 +165,9 @@ nav {
   line-height: 1;
 }
 
-/* ============================================
-   RESPONSIVE MOBILE
-   ============================================ */
+
+/* RESPONSIVE MOBILE */
+
 @media (max-width: 768px) {
   nav {
     padding: 0.75rem 1rem;
@@ -268,9 +267,9 @@ nav {
   }
 }
 
-/* ============================================
-   ÉTATS DES BOUTONS
-   ============================================ */
+
+/* ÉTATS DES BOUTONS */
+
 .nav-btn:active {
   transform: scale(0.98);
 }
@@ -286,9 +285,9 @@ nav {
   transform: none;
 }
 
-/* ============================================
-   ACCESSIBILITÉ
-   ============================================ */
+
+/* ACCESSIBILITÉ */
+
 @media (prefers-reduced-motion: reduce) {
   .nav-btn,
   .logo-btn,
@@ -305,9 +304,9 @@ nav {
   outline-offset: 3px;
 }
 
-/* ============================================
-   VARIANTES SUPPLÉMENTAIRES
-   ============================================ */
+
+/* VARIANTES SUPPLÉMENTAIRES */
+
 
 /* Version badge pour notifications */
 .nav-btn-badge {

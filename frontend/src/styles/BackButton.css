@@ -1,6 +1,4 @@
-/* ============================================
-   BACK BUTTON - Composant réutilisable
-   ============================================ */
+
 .back-button {
   display: inline-flex;
   align-items: center;
@@ -42,9 +40,9 @@
   outline-offset: 2px;
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
+
+/* RESPONSIVE */
+
 @media (max-width: 768px) {
   .back-button {
     padding: 0.4rem 0.875rem;
@@ -69,9 +67,9 @@
   }
 }
 
-/* ============================================
-   ACCESSIBILITÉ
-   ============================================ */
+
+/* ACCESSIBILITÉ */
+
 @media (prefers-reduced-motion: reduce) {
   .back-button,
   .back-button svg {

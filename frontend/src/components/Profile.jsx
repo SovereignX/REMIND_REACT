@@ -22,13 +22,13 @@ const Profile = () => {
       <div className="profile-info">
         <h1>Mon Profil</h1>
         <p>
-          <strong>Prénom :</strong> {user.prenom}
+          <strong>Prénom :</strong> {user.first_name}
         </p>
         <p>
-          <strong>Nom :</strong> {user.nom}
+          <strong>Nom :</strong> {user.last_name}
         </p>
         <p>
-          <strong>Email :</strong> {user.email}
+          <strong>Email :</strong> {user.email_address}
         </p>
         <p>
           <strong>Membre depuis :</strong>{" "}

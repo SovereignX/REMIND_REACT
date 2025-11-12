@@ -1,7 +1,7 @@
 <?php
 /**
- * API de déconnexion utilisateur
- * POST /backend/api/users/logout.php
+ * API - Déconnexion utilisateur
+ * POST /api/users/logout.php
  */
 
 require_once '../../config/cors.php';
@@ -17,3 +17,4 @@ echo json_encode([
     'success' => true,
     'message' => 'Déconnexion réussie'
 ]);
+?>

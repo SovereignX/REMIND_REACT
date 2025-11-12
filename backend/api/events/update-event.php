@@ -37,7 +37,7 @@ if (!is_numeric($eventId)) {
     sendResponse(false, ['error' => 'L\'ID de l\'événement doit être numérique'], 400);
 }
 
-$userId = getUserId();
+$userId = getAuthUserId();
 if (!$userId) {
     sendResponse(false, ['error' => 'Authentification requise'], 401);
 }
@@ -81,7 +81,7 @@ try {
     }
     
     if (isset($data['event_title'])) {
-        // ✅ NETTOYER le titre
+        // NETTOYER le titre
         $cleanedTitle = cleanEventTitle($data['event_title']);
         
         if (empty($cleanedTitle)) {

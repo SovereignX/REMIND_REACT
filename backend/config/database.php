@@ -1,17 +1,14 @@
 <?php
-/**
- * Configuration de la base de données
- * Lit les credentials depuis le fichier .env à la racine du projet
- */
+
+//Configuration de la base de données
+//Lit les credentials depuis le fichier .env à la racine du projet
+
 
 function getConnection() {
-    // ============================================
+
     // CHARGER LE FICHIER .env
-    // ============================================
+
     
-    // Chemin vers le .env à la RACINE du projet
-    // __DIR__ = backend/config/
-    // /../../ = remonte de 2 niveaux → racine du projet
     $envFile = __DIR__ . '/../../.env';
     
     // Vérifier si le fichier existe
@@ -37,19 +34,16 @@ function getConnection() {
         error_log("Fichier .env introuvable : $envFile");
     }
     
-    // ============================================
     // RÉCUPÉRER LES CREDENTIALS
-    // ============================================
     
     $host = $_ENV['DB_HOST'] ?? 'localhost';
     $dbname = $_ENV['DB_NAME'] ?? 'remind';
     $username = $_ENV['DB_USER'] ?? 'root';
     $password = $_ENV['DB_PASSWORD'] ?? '';
     
-    // ============================================
+
     // CONNEXION À LA BASE DE DONNÉES
-    // ============================================
-    
+
     try {
         $db = new PDO(
             "mysql:host=$host;dbname=$dbname;charset=utf8mb4", 

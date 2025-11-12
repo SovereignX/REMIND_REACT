@@ -15,9 +15,8 @@ require_once '../../config/auth.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
-/**
- * Fonction helper pour les réponses JSON
- */
+
+// Fonction helper pour les réponses JSON
 function sendResponse($success, $data = [], $httpCode = 200) {
     http_response_code($httpCode);
     echo json_encode(array_merge(['success' => $success], $data));
@@ -45,7 +44,7 @@ if (!is_numeric($eventId)) {
 }
 
 // Récupérer l'utilisateur authentifié
-$userId = getUserId();
+$userId = getAuthUserId();
 if (!$userId) {
     sendResponse(false, ['error' => 'Authentification requise'], 401);
 }

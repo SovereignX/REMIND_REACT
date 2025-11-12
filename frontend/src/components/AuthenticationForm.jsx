@@ -14,8 +14,8 @@ export default function AuthenticationForm() {
     email: "",
     password: "",
     confirm: "",
-    nom: "",
-    prenom: "",
+    last_name: "",
+    first_name: "",
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -71,11 +71,11 @@ export default function AuthenticationForm() {
     }
 
     if (mode === "register") {
-      if (!formData.nom.trim()) {
-        newErrors.nom = "Le nom est requis";
+      if (!formData.last_name.trim()) {
+        newErrors.last_name = "Le nom est requis";
       }
-      if (!formData.prenom.trim()) {
-        newErrors.prenom = "Le prénom est requis";
+      if (!formData.first_name.trim()) {
+        newErrors.first_name = "Le prénom est requis";
       }
       if (formData.password !== formData.confirm) {
         newErrors.confirm = "Les mots de passe ne correspondent pas";
@@ -134,40 +134,40 @@ export default function AuthenticationForm() {
           {mode === "register" && (
             <div className="form-row">
               <div className="input-group">
-                <label htmlFor="prenom" className="input-label">
+                <label htmlFor="first_name" className="input-label">
                   Prénom <span className="required">*</span>
                 </label>
                 <input
                   type="text"
-                  id="prenom"
-                  name="prenom"
+                  id="first_name"
+                  name="first_name"
                   placeholder="Votre prénom"
-                  value={formData.prenom}
+                  value={formData.first_name}
                   onChange={handleChange}
-                  className={errors.prenom ? "input-error" : ""}
+                  className={errors.first_name ? "input-error" : ""}
                   disabled={isLoading}
                 />
-                {errors.prenom && (
-                  <span className="error-message">{errors.prenom}</span>
+                {errors.first_name && (
+                  <span className="error-message">{errors.first_name}</span>
                 )}
               </div>
 
               <div className="input-group">
-                <label htmlFor="nom" className="input-label">
+                <label htmlFor="last_name" className="input-label">
                   Nom <span className="required">*</span>
                 </label>
                 <input
                   type="text"
-                  id="nom"
-                  name="nom"
+                  id="last_name"
+                  name="last_name"
                   placeholder="Votre nom"
-                  value={formData.nom}
+                  value={formData.last_name}
                   onChange={handleChange}
-                  className={errors.nom ? "input-error" : ""}
+                  className={errors.last_name ? "input-error" : ""}
                   disabled={isLoading}
                 />
-                {errors.nom && (
-                  <span className="error-message">{errors.nom}</span>
+                {errors.last_name && (
+                  <span className="error-message">{errors.last_name}</span>
                 )}
               </div>
             </div>

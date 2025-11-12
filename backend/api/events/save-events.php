@@ -18,9 +18,8 @@ function sendResponse($success, $data = [], $httpCode = 200) {
     exit;
 }
 
-/**
- * Valider un événement individuel
- */
+
+// Valider un événement individuel
 function validateEvent($event, $index) {
     $errors = [];
     
@@ -61,7 +60,7 @@ if (!isset($data['events']) || !is_array($data['events'])) {
     sendResponse(false, ['error' => 'Le champ "events" doit être un tableau'], 400);
 }
 
-$userId = getUserId();
+$userId = getAuthUserId();
 if (!$userId) {
     sendResponse(false, ['error' => 'Authentification requise'], 401);
 }
@@ -104,7 +103,7 @@ try {
         $weekdayIndex = intval($event['weekday_index']);
         $startTime = trim($event['start_time']);
         
-        // ✅ NETTOYER le titre
+        // NETTOYER le titre
         $eventTitle = cleanEventTitle($event['event_title']);
         
         // Vérifier que le titre nettoyé n'est pas vide

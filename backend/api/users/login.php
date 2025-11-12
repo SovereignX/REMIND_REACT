@@ -1,4 +1,15 @@
 <?php
+/**
+ * API - Connexion utilisateur
+ * POST /api/users/login.php
+ * 
+ * Corps JSON requis :
+ * {
+ *   "email": "user@example.com",
+ *   "password": "motdepasse"
+ * }
+ */
+
 require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/session.php';
@@ -19,7 +30,11 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     sendResponse(false, ['message' => 'Données JSON invalides'], 400);
 }
 
-// ✅ Nettoyage de l'email
+
+// NETTOYAGE ET VALIDATION
+
+
+// EMAIL : Utiliser cleanEmail()
 $email = cleanEmail($data["email"] ?? '');
 $password = trim($data["password"] ?? '');  // Juste trim pour le password
 
@@ -31,24 +46,24 @@ if (!$email) {
 try {
     $db = getConnection();
     
-    // ✅ Requête préparée avec les BONNES colonnes
+    // Requête préparée
     $req = $db->prepare(
         "SELECT user_id, email_address, password_hash, last_name, first_name 
          FROM users 
-         WHERE email_address = :email 
+         WHERE email_address = :email_address 
          LIMIT 1"
     );
-    $req->bindParam(':email', $email, PDO::PARAM_STR);
+    $req->bindParam(':email_address', $email, PDO::PARAM_STR);
     $req->execute();
     
     $user = $req->fetch(PDO::FETCH_ASSOC);
     
-    // ✅ Vérifier utilisateur et mot de passe
+    // Vérifier utilisateur et mot de passe
     if (!$user || !password_verify($password, $user["password_hash"])) {
         sendResponse(false, ['message' => 'Email ou mot de passe incorrect'], 401);
     }
     
-    // ✅ Créer la session avec les données BRUTES de la BDD
+    // Créer la session avec les données BRUTES de la BDD
     setAuthUser($user["user_id"], [
         'email_address' => $user["email_address"],
         'last_name' => $user["last_name"],
@@ -58,24 +73,20 @@ try {
     // Supprimer le mot de passe de la réponse
     unset($user['password_hash']);
     
-    // ✅ json_encode() s'occupe de l'échappement automatiquement
+    // json_encode() s'occupe de l'échappement automatiquement
     sendResponse(true, [
         'message' => 'Connexion réussie',
         'userId' => (int)$user["user_id"],
         'user' => [
-            'id' => (int)$user["user_id"],
             'user_id' => (int)$user["user_id"],
-            'email' => $user["email_address"],
             'email_address' => $user["email_address"],
-            'nom' => $user["last_name"], // backward compatibility
             'last_name' => $user["last_name"],
-            'prenom' => $user["first_name"], // backward compatibility
             'first_name' => $user["first_name"]
         ]
     ], 200);
     
 } catch(PDOException $e) {
-    error_log("Erreur de connexion: " . $e->getMessage());
+    error_log("Erreur de connexion : " . $e->getMessage());
     sendResponse(false, ['message' => 'Erreur serveur'], 500);
 }
 ?>

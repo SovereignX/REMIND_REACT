@@ -24,9 +24,9 @@
   transform: translateY(0);
 }
 
-/* ============================================
-   BOUTON DÉSACTIVÉ - Style grisé
-   ============================================ */
+
+/* BOUTON DÉSACTIVÉ - grisé */
+
 .nav-button-disabled {
   background-color: #b0b0b0 !important;
   color: #f0f0f0 !important;
@@ -59,9 +59,9 @@
   transform: scale(1.1);
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
+
+/* RESPONSIVE */
+
 @media (max-width: 768px) {
   .nav-button {
     padding: 0.875rem 1.75rem;
