@@ -1,6 +1,6 @@
 <?php
 /**
- * API - Récupérer le profil utilisateur connecté
+ * API - Get authenticated user profile
  * GET /backend/api/users/profile.php
  */
 
@@ -11,7 +11,7 @@ require_once '../../config/session.php';
 header("Content-Type: application/json; charset=UTF-8");
 
 /**
- * Fonction helper pour les réponses JSON
+ * Helper function for JSON responses
  */
 function sendResponse($success, $data = [], $httpCode = 200) {
     http_response_code($httpCode);
@@ -19,9 +19,9 @@ function sendResponse($success, $data = [], $httpCode = 200) {
     exit;
 }
 
-// Vérifier si l'utilisateur est connecté
+// Check if user is authenticated
 if (!isAuthUser()) {
-    sendResponse(false, ['error' => 'Non authentifié'], 401);
+    sendResponse(false, ['error' => 'Not authenticated'], 401);
 }
 
 $userId = getAuthUserId();
@@ -29,35 +29,42 @@ $userId = getAuthUserId();
 try {
     $db = getConnection();
     
-    // Récupérer les informations complètes de l'utilisateur
+    // Get complete user information
     $req = $db->prepare(
-        "SELECT id, email, nom, prenom, created_at 
+        "SELECT user_id, email_address, last_name, first_name, created_at 
          FROM users 
-         WHERE id = :id 
+         WHERE user_id = :user_id 
          LIMIT 1"
     );
-    $req->bindParam(':id', $userId, PDO::PARAM_INT);
+    $req->bindParam(':user_id', $userId, PDO::PARAM_INT);
     $req->execute();
     
     $user = $req->fetch(PDO::FETCH_ASSOC);
     
     if (!$user) {
-        // L'utilisateur n'existe plus en base
+        // User no longer exists in database
         destroyAuthSession();
-        sendResponse(false, ['error' => 'Utilisateur introuvable'], 404);
+        sendResponse(false, ['error' => 'User not found'], 404);
     }
     
-    // Ne jamais renvoyer le mot de passe
-    unset($user['password']);
+    // Never send back the password
+    unset($user['password_hash']);
     
-    // Convertir l'ID en entier
-    $user['id'] = (int)$user['id'];
+    // Convert ID to integer
+    $user['user_id'] = (int)$user['user_id'];
+    
+    // Add backward compatibility fields
+    $user['id'] = $user['user_id'];
+    $user['email'] = $user['email_address'];
+    $user['nom'] = $user['last_name'];
+    $user['prenom'] = $user['first_name'];
     
     sendResponse(true, [
         'user' => $user
     ], 200);
     
 } catch(PDOException $e) {
-    error_log("Erreur profile: " . $e->getMessage());
-    sendResponse(false, ['error' => 'Erreur serveur'], 500);
+    error_log("Error profile: " . $e->getMessage());
+    sendResponse(false, ['error' => 'Server error'], 500);
 }
+?>

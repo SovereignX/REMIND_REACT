@@ -1,31 +1,31 @@
 <?php
 /**
- * Configuration de l'authentification
- * Ce fichier est déprécié, utiliser session.php à la place
- * Conservé pour compatibilité avec les anciens endpoints
+ * Authentication configuration
+ * This file is deprecated, use session.php instead
+ * Kept for compatibility with old endpoints
  */
 
 require_once __DIR__ . '/session.php';
 
 /**
- * Récupère l'ID de l'utilisateur connecté
- * @deprecated Utiliser getAuthUserId() de session.php
+ * Get authenticated user ID
+ * @deprecated Use getAuthUserId() from session.php
  */
 function getUserId() {
     return getAuthUserId();
 }
 
 /**
- * Vérifie si un utilisateur est connecté
- * @deprecated Utiliser isAuthUser() de session.php
+ * Check if a user is authenticated
+ * @deprecated Use isAuthUser() from session.php
  */
 function isAuthenticated() {
     return isAuthUser();
 }
 
 /**
- * Récupère les informations complètes de l'utilisateur connecté
- * @deprecated Utiliser getAuthUserInfo() de session.php
+ * Get complete authenticated user information
+ * @deprecated Use getAuthUserInfo() from session.php
  */
 function getCurrentUser() {
     $userId = getAuthUserId();
@@ -39,55 +39,61 @@ function getCurrentUser() {
         $db = getConnection();
         
         $req = $db->prepare(
-            "SELECT id, email, nom, prenom, created_at 
+            "SELECT user_id, email_address, last_name, first_name, created_at 
              FROM users 
-             WHERE id = :id 
+             WHERE user_id = :user_id 
              LIMIT 1"
         );
-        $req->bindParam(':id', $userId, PDO::PARAM_INT);
+        $req->bindParam(':user_id', $userId, PDO::PARAM_INT);
         $req->execute();
         
         $user = $req->fetch(PDO::FETCH_ASSOC);
         
         if ($user) {
-            $user['id'] = (int)$user['id'];
+            $user['user_id'] = (int)$user['user_id'];
+            // Add backward compatibility fields
+            $user['id'] = $user['user_id'];
+            $user['email'] = $user['email_address'];
+            $user['nom'] = $user['last_name'];
+            $user['prenom'] = $user['first_name'];
             return $user;
         }
         
         return null;
         
     } catch(PDOException $e) {
-        error_log("Erreur getCurrentUser: " . $e->getMessage());
+        error_log("Error getCurrentUser: " . $e->getMessage());
         return null;
     }
 }
 
 /**
- * Requiert une authentification (renvoie 401 si non connecté)
+ * Require authentication (returns 401 if not authenticated)
  */
 function requireAuth() {
     if (!isAuthUser()) {
         http_response_code(401);
         echo json_encode([
             'success' => false,
-            'error' => 'Authentification requise'
+            'error' => 'Authentication required'
         ]);
         exit;
     }
 }
 
 /**
- * Définit l'utilisateur connecté en session
- * @deprecated Utiliser setAuthUser() de session.php
+ * Set authenticated user in session
+ * @deprecated Use setAuthUser() from session.php
  */
 function setAuthenticatedUser($userId, $userInfo = []) {
     setAuthUser($userId, $userInfo);
 }
 
 /**
- * Déconnecte l'utilisateur
- * @deprecated Utiliser destroyAuthSession() de session.php
+ * Log out user
+ * @deprecated Use destroyAuthSession() from session.php
  */
 function logout() {
     destroyAuthSession();
 }
+?>

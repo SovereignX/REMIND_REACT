@@ -1,12 +1,12 @@
 <?php
 /**
- * API - Récupérer les événements de l'utilisateur
+ * API - Get user events
  * GET /api/events/get-events.php
  * 
- * Query params optionnels:
- * - day_index: filtrer par jour (ex: ?day_index=0 pour Lundi)
- * - start_date: date de début (format: YYYY-MM-DD)
- * - end_date: date de fin
+ * Optional query params:
+ * - weekday_index: filter by day (ex: ?weekday_index=0 for Monday)
+ * - start_date: start date (format: YYYY-MM-DD)
+ * - end_date: end date
  */
 
 require_once '../../config/cors.php';
@@ -16,7 +16,7 @@ require_once '../../config/auth.php';
 header('Content-Type: application/json; charset=UTF-8');
 
 /**
- * Fonction helper pour les réponses JSON
+ * Helper function for JSON responses
  */
 function sendResponse($success, $data = [], $httpCode = 200) {
     http_response_code($httpCode);
@@ -24,33 +24,36 @@ function sendResponse($success, $data = [], $httpCode = 200) {
     exit;
 }
 
-// Récupérer l'utilisateur connecté
+// Get authenticated user
 $userId = getUserId();
 if (!$userId) {
-    sendResponse(false, ['error' => 'Authentification requise'], 401);
+    sendResponse(false, ['error' => 'Authentication required'], 401);
 }
 
 try {
     $db = getConnection();
     
-    // Construction de la requête selon les filtres
-    $sql = "SELECT id, user_id, day_index, time, title, color, duration, 
-                   created_at, updated_at 
+    // Build query based on filters
+    $sql = "SELECT event_id, user_id, weekday_index, start_time, event_title, 
+                   event_color, duration_hours, created_at, updated_at 
             FROM events 
             WHERE user_id = :user_id";
     
     $params = [':user_id' => $userId];
     
-    // Filtre optionnel par day_index
-    if (isset($_GET['day_index']) && is_numeric($_GET['day_index'])) {
-        $dayIndex = intval($_GET['day_index']);
-        if ($dayIndex >= 0 && $dayIndex <= 6) {
-            $sql .= " AND day_index = :day_index";
-            $params[':day_index'] = $dayIndex;
+    // Optional filter by weekday_index (also support old 'day_index' for backward compatibility)
+    $dayParam = isset($_GET['weekday_index']) ? $_GET['weekday_index'] : 
+                (isset($_GET['day_index']) ? $_GET['day_index'] : null);
+    
+    if ($dayParam !== null && is_numeric($dayParam)) {
+        $weekdayIndex = intval($dayParam);
+        if ($weekdayIndex >= 0 && $weekdayIndex <= 6) {
+            $sql .= " AND weekday_index = :weekday_index";
+            $params[':weekday_index'] = $weekdayIndex;
         }
     }
     
-    // Filtre optionnel par plage de dates
+    // Optional filter by date range
     if (isset($_GET['start_date']) && !empty($_GET['start_date'])) {
         $sql .= " AND created_at >= :start_date";
         $params[':start_date'] = $_GET['start_date'];
@@ -61,10 +64,10 @@ try {
         $params[':end_date'] = $_GET['end_date'];
     }
     
-    // Tri optimisé par day_index puis par time
-    $sql .= " ORDER BY day_index ASC, time ASC";
+    // Optimized sorting by weekday_index then start_time
+    $sql .= " ORDER BY weekday_index ASC, start_time ASC";
     
-    // Exécution de la requête
+    // Execute query
     $req = $db->prepare($sql);
     foreach ($params as $key => $value) {
         $req->bindValue($key, $value);
@@ -73,12 +76,20 @@ try {
     
     $events = $req->fetchAll(PDO::FETCH_ASSOC);
     
-    // Formatage des données
+    // Format data
     foreach ($events as &$event) {
-        $event['id'] = (int)$event['id'];
+        $event['event_id'] = (int)$event['event_id'];
         $event['user_id'] = (int)$event['user_id'];
-        $event['day_index'] = (int)$event['day_index'];
-        $event['duration'] = (float)$event['duration'];
+        $event['weekday_index'] = (int)$event['weekday_index'];
+        $event['duration_hours'] = (float)$event['duration_hours'];
+        
+        // Add backward compatibility fields
+        $event['id'] = $event['event_id'];
+        $event['day_index'] = $event['weekday_index'];
+        $event['time'] = $event['start_time'];
+        $event['title'] = $event['event_title'];
+        $event['color'] = $event['event_color'];
+        $event['duration'] = $event['duration_hours'];
     }
     
     sendResponse(true, [
@@ -87,7 +98,7 @@ try {
     ], 200);
     
 } catch(PDOException $e) {
-    error_log("Erreur get-events: " . $e->getMessage());
-    sendResponse(false, ['error' => 'Erreur lors de la récupération des événements'], 500);
+    error_log("Error get-events: " . $e->getMessage());
+    sendResponse(false, ['error' => 'Error retrieving events'], 500);
 }
 ?>

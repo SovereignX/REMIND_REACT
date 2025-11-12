@@ -1,15 +1,15 @@
 <?php
 /**
- * API - Ajouter un événement
+ * API - Add an event
  * POST /api/events/add-event.php
  * 
- * Body JSON requis:
+ * Required JSON body:
  * {
- *   "day_index": 0,       // 0=Lundi, 1=Mardi, ..., 6=Dimanche
- *   "time": "09:00",
- *   "title": "Réunion",
- *   "color": "#b4a7d6",
- *   "duration": 1.5
+ *   "weekday_index": 0,       // 0=Monday, 1=Tuesday, ..., 6=Sunday
+ *   "start_time": "09:00",
+ *   "event_title": "Meeting",
+ *   "event_color": "#b4a7d6",
+ *   "duration_hours": 1.5
  * }
  */
 
@@ -17,12 +17,12 @@ require_once '../../config/cors.php';
 require_once '../../config/database.php';
 require_once '../../config/auth.php';
 require_once '../../utils/days.php';
-require_once '../../utils/validation.php';  // ← NOUVEAU
+require_once '../../utils/validation.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
 /**
- * Fonction helper pour les réponses JSON
+ * Helper function for JSON responses
  */
 function sendResponse($success, $data = [], $httpCode = 200) {
     http_response_code($httpCode);
@@ -31,122 +31,122 @@ function sendResponse($success, $data = [], $httpCode = 200) {
 }
 
 /**
- * Fonction de validation des données
+ * Data validation function
  */
 function validateEventData($data) {
     $errors = [];
     
-    // Valider day_index
-    if (!isset($data['day_index'])) {
-        $errors[] = "L'index du jour est requis";
-    } elseif (!isValidDayIndex($data['day_index'])) {
-        $errors[] = "L'index du jour doit être entre 0 et 6 (0=Lundi, 6=Dimanche)";
+    // Validate weekday_index
+    if (!isset($data['weekday_index'])) {
+        $errors[] = "Weekday index is required";
+    } elseif (!isValidDayIndex($data['weekday_index'])) {
+        $errors[] = "Weekday index must be between 0 and 6 (0=Monday, 6=Sunday)";
     }
     
-    if (empty($data['time']) || !preg_match('/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', $data['time'])) {
-        $errors[] = "L'heure est requise et doit être au format HH:MM";
+    if (empty($data['start_time']) || !preg_match('/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/', $data['start_time'])) {
+        $errors[] = "Start time is required and must be in HH:MM format";
     }
     
-    if (empty($data['title']) || strlen($data['title']) > 255) {
-        $errors[] = "Le titre est requis (max 255 caractères)";
+    if (empty($data['event_title']) || strlen($data['event_title']) > 255) {
+        $errors[] = "Event title is required (max 255 characters)";
     }
     
-    if (empty($data['color']) || !preg_match('/^#[0-9A-Fa-f]{6}$/', $data['color'])) {
-        $errors[] = "La couleur doit être au format hexadécimal (#RRGGBB)";
+    if (empty($data['event_color']) || !preg_match('/^#[0-9A-Fa-f]{6}$/', $data['event_color'])) {
+        $errors[] = "Color must be in hexadecimal format (#RRGGBB)";
     }
     
-    if (!isset($data['duration']) || $data['duration'] <= 0 || $data['duration'] > 24) {
-        $errors[] = "La durée doit être entre 0.5 et 24 heures";
+    if (!isset($data['duration_hours']) || $data['duration_hours'] <= 0 || $data['duration_hours'] > 24) {
+        $errors[] = "Duration must be between 0.5 and 24 hours";
     }
     
     return $errors;
 }
 
-// Récupérer les données JSON
+// Get JSON data
 $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
-// Vérifier la validité du JSON
+// Check JSON validity
 if (json_last_error() !== JSON_ERROR_NONE) {
-    sendResponse(false, ['error' => 'Format JSON invalide'], 400);
+    sendResponse(false, ['error' => 'Invalid JSON format'], 400);
 }
 
-// Récupérer l'utilisateur connecté
+// Get authenticated user
 $userId = getUserId();
 if (!$userId) {
-    sendResponse(false, ['error' => 'Authentification requise'], 401);
+    sendResponse(false, ['error' => 'Authentication required'], 401);
 }
 
-// Valider les données
+// Validate data
 $errors = validateEventData($data);
 if (!empty($errors)) {
     sendResponse(false, ['errors' => $errors], 400);
 }
 
 // ============================================
-// NETTOYER LES DONNÉES (SÉCURITÉ XSS)
+// CLEAN DATA (XSS SECURITY)
 // ============================================
 
-$dayIndex = intval($data['day_index']);
-$time = trim($data['time']);
+$weekdayIndex = intval($data['weekday_index']);
+$startTime = trim($data['start_time']);
 
-// ✅ IMPORTANT : Nettoyer le titre pour éviter XSS
-$title = cleanEventTitle($data['title']);
+// ✅ IMPORTANT: Clean title to prevent XSS
+$eventTitle = cleanEventTitle($data['event_title']);
 
-// Vérifier que le titre nettoyé n'est pas vide
-if (empty($title)) {
-    sendResponse(false, ['error' => 'Le titre ne peut pas être vide ou contenir uniquement des balises HTML'], 400);
+// Check that cleaned title is not empty
+if (empty($eventTitle)) {
+    sendResponse(false, ['error' => 'Title cannot be empty or contain only HTML tags'], 400);
 }
 
-// Vérifier les patterns dangereux restants
-if (containsDangerousChars($title)) {
-    sendResponse(false, ['error' => 'Le titre contient des éléments non autorisés'], 400);
+// Check for remaining dangerous patterns
+if (containsDangerousChars($eventTitle)) {
+    sendResponse(false, ['error' => 'Title contains unauthorized elements'], 400);
 }
 
-$color = trim($data['color']);
-$duration = floatval($data['duration']);
+$eventColor = trim($data['event_color']);
+$durationHours = floatval($data['duration_hours']);
 
 // ============================================
-// INSÉRER EN BASE DE DONNÉES
+// INSERT INTO DATABASE
 // ============================================
 
 try {
     $db = getConnection();
     
     $req = $db->prepare(
-        "INSERT INTO events (user_id, day_index, time, title, color, duration) 
-         VALUES (:user_id, :day_index, :time, :title, :color, :duration)"
+        "INSERT INTO events (user_id, weekday_index, start_time, event_title, event_color, duration_hours) 
+         VALUES (:user_id, :weekday_index, :start_time, :event_title, :event_color, :duration_hours)"
     );
     
     $req->bindParam(':user_id', $userId, PDO::PARAM_INT);
-    $req->bindParam(':day_index', $dayIndex, PDO::PARAM_INT);
-    $req->bindParam(':time', $time, PDO::PARAM_STR);
-    $req->bindParam(':title', $title, PDO::PARAM_STR);  // Titre nettoyé
-    $req->bindParam(':color', $color, PDO::PARAM_STR);
-    $req->bindParam(':duration', $duration);
+    $req->bindParam(':weekday_index', $weekdayIndex, PDO::PARAM_INT);
+    $req->bindParam(':start_time', $startTime, PDO::PARAM_STR);
+    $req->bindParam(':event_title', $eventTitle, PDO::PARAM_STR);
+    $req->bindParam(':event_color', $eventColor, PDO::PARAM_STR);
+    $req->bindParam(':duration_hours', $durationHours);
     
     $req->execute();
     
     $eventId = $db->lastInsertId();
     
-    // Log pour debug (optionnel)
-    error_log("Événement créé: ID=$eventId, Jour=" . dayIndexToName($dayIndex) . " ($dayIndex), Heure=$time");
+    // Log for debug (optional)
+    error_log("Event created: ID=$eventId, Day=" . dayIndexToName($weekdayIndex) . " ($weekdayIndex), Time=$startTime");
     
     sendResponse(true, [
-        'message' => 'Événement ajouté avec succès',
+        'message' => 'Event added successfully',
         'event' => [
-            'id' => $eventId,
+            'event_id' => $eventId,
             'user_id' => $userId,
-            'day_index' => $dayIndex,
-            'time' => $time,
-            'title' => $title,  // Titre nettoyé retourné
-            'color' => $color,
-            'duration' => $duration
+            'weekday_index' => $weekdayIndex,
+            'start_time' => $startTime,
+            'event_title' => $eventTitle,
+            'event_color' => $eventColor,
+            'duration_hours' => $durationHours
         ]
     ], 201);
     
 } catch(PDOException $e) {
-    error_log("Erreur add-event: " . $e->getMessage());
-    sendResponse(false, ['error' => 'Erreur lors de l\'ajout de l\'événement'], 500);
+    error_log("Error add-event: " . $e->getMessage());
+    sendResponse(false, ['error' => 'Error adding event'], 500);
 }
 ?>

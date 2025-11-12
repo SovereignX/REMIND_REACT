@@ -1,11 +1,11 @@
 <?php
 /**
- * API - Supprimer un événement
+ * API - Delete an event
  * DELETE /api/events/delete-event.php
  * 
- * Body JSON requis:
+ * Required JSON body:
  * {
- *   "id": 1
+ *   "event_id": 1
  * }
  */
 
@@ -16,7 +16,7 @@ require_once '../../config/auth.php';
 header("Content-Type: application/json; charset=UTF-8");
 
 /**
- * Fonction helper pour les réponses JSON
+ * Helper function for JSON responses
  */
 function sendResponse($success, $data = [], $httpCode = 200) {
     http_response_code($httpCode);
@@ -24,59 +24,71 @@ function sendResponse($success, $data = [], $httpCode = 200) {
     exit;
 }
 
-// Récupérer les données JSON
+// Get JSON data
 $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
-// Vérifier la validité du JSON
+// Check JSON validity
 if (json_last_error() !== JSON_ERROR_NONE) {
-    sendResponse(false, ['error' => 'Format JSON invalide'], 400);
+    sendResponse(false, ['error' => 'Invalid JSON format'], 400);
 }
 
-// Vérifier l'ID de l'événement
-if (!isset($data['id']) || !is_numeric($data['id'])) {
-    sendResponse(false, ['error' => 'ID de l\'événement requis'], 400);
+// Check event ID
+if (!isset($data['event_id']) && !isset($data['id'])) {
+    sendResponse(false, ['error' => 'Event ID required'], 400);
 }
 
-// Récupérer l'utilisateur connecté
+// Support both old 'id' and new 'event_id' for backward compatibility
+$eventId = isset($data['event_id']) ? intval($data['event_id']) : intval($data['id']);
+
+if (!is_numeric($eventId)) {
+    sendResponse(false, ['error' => 'Event ID must be numeric'], 400);
+}
+
+// Get authenticated user
 $userId = getUserId();
 if (!$userId) {
-    sendResponse(false, ['error' => 'Authentification requise'], 401);
+    sendResponse(false, ['error' => 'Authentication required'], 401);
 }
-
-$eventId = intval($data['id']);
 
 try {
     $db = getConnection();
     
-    // Vérifier que l'événement existe et appartient à l'utilisateur
-    $checkReq = $db->prepare("SELECT id, title FROM events WHERE id = :id AND user_id = :user_id");
-    $checkReq->bindParam(':id', $eventId, PDO::PARAM_INT);
+    // Check that event exists and belongs to user
+    $checkReq = $db->prepare(
+        "SELECT event_id, event_title 
+         FROM events 
+         WHERE event_id = :event_id AND user_id = :user_id"
+    );
+    $checkReq->bindParam(':event_id', $eventId, PDO::PARAM_INT);
     $checkReq->bindParam(':user_id', $userId, PDO::PARAM_INT);
     $checkReq->execute();
     
     $event = $checkReq->fetch(PDO::FETCH_ASSOC);
     
     if (!$event) {
-        sendResponse(false, ['error' => 'Événement non trouvé ou accès non autorisé'], 404);
+        sendResponse(false, ['error' => 'Event not found or access not authorized'], 404);
     }
     
-    // Supprimer l'événement
-    $deleteReq = $db->prepare("DELETE FROM events WHERE id = :id AND user_id = :user_id");
-    $deleteReq->bindParam(':id', $eventId, PDO::PARAM_INT);
+    // Delete event
+    $deleteReq = $db->prepare(
+        "DELETE FROM events 
+         WHERE event_id = :event_id AND user_id = :user_id"
+    );
+    $deleteReq->bindParam(':event_id', $eventId, PDO::PARAM_INT);
     $deleteReq->bindParam(':user_id', $userId, PDO::PARAM_INT);
     $deleteReq->execute();
     
     sendResponse(true, [
-        'message' => 'Événement supprimé avec succès',
+        'message' => 'Event deleted successfully',
         'deleted_event' => [
-            'id' => $eventId,
-            'title' => $event['title']
+            'event_id' => $eventId,
+            'event_title' => $event['event_title']
         ]
     ], 200);
     
 } catch(PDOException $e) {
-    error_log("Erreur delete-event: " . $e->getMessage());
-    sendResponse(false, ['error' => 'Erreur lors de la suppression de l\'événement'], 500);
+    error_log("Error delete-event: " . $e->getMessage());
+    sendResponse(false, ['error' => 'Error deleting event'], 500);
 }
 ?>
