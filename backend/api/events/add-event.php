@@ -95,10 +95,6 @@ if (empty($eventTitle)) {
     sendResponse(false, ['error' => 'Le titre ne peut pas être vide ou contenir uniquement des balises HTML'], 400);
 }
 
-// Vérifier qu'il ne contient pas de patterns dangereux
-if (containsDangerousChars($eventTitle)) {
-    sendResponse(false, ['error' => 'Le titre contient des éléments non autorisés'], 400);
-}
 
 $eventColor = trim($data['event_color']);
 $durationHours = floatval($data['duration_hours']);

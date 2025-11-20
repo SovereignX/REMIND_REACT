@@ -147,12 +147,6 @@ function cleanEventTitle($title) {
     // Supprimer les caractères de contrôle
     $title = preg_replace('/[\x00-\x1F\x7F]/u', '', $title);
     
-    // Supprimer les attributs d'événements dangereux (onclick, onerror, etc.)
-    $title = preg_replace('/on\w+\s*=/i', '', $title);
-    
-    // Supprimer javascript: protocol
-    $title = preg_replace('/javascript:/i', '', $title);
-    
     // Limiter les espaces multiples
     $title = preg_replace('/\s+/', ' ', $title);
     

@@ -74,15 +74,11 @@ if ($password !== $confirm) {
 // Validation nom/prénom
 if (empty($lastName)) {
     $errors[] = "Le nom est requis";
-} elseif (containsDangerousChars($lastName)) {
-    $errors[] = "Le nom contient des caractères non autorisés";
-}
+} 
 
 if (empty($firstName)) {
     $errors[] = "Le prénom est requis";
-} elseif (containsDangerousChars($firstName)) {
-    $errors[] = "Le prénom contient des caractères non autorisés";
-}
+} 
 
 if (!empty($errors)) {
     sendResponse(false, ['errors' => $errors], 400);

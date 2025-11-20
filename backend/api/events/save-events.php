@@ -112,11 +112,6 @@ try {
             sendResponse(false, ['error' => 'Un titre ne peut pas être vide ou contenir uniquement des balises HTML'], 400);
         }
         
-        if (containsDangerousChars($eventTitle)) {
-            $db->rollBack();
-            sendResponse(false, ['error' => 'Un titre contient des éléments non autorisés'], 400);
-        }
-        
         $eventColor = trim($event['event_color']);
         $durationHours = floatval($event['duration_hours']);
         

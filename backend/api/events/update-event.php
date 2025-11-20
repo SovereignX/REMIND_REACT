@@ -92,9 +92,6 @@ try {
             sendResponse(false, ['error' => 'Titre invalide (max 255 caractères)'], 400);
         }
         
-        if (containsDangerousChars($cleanedTitle)) {
-            sendResponse(false, ['error' => 'Le titre contient des éléments non autorisés'], 400);
-        }
         
         $updateFields[] = "event_title = :event_title";
         $params[':event_title'] = $cleanedTitle;
