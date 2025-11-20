@@ -58,6 +58,7 @@ function cleanEmail($email) {
  * @return array ['valid' => bool, 'error' => string|null]
  */
 function validatePassword($password, $minLength = 8) {
+    // Vérifier la longueur minimale
     if (strlen($password) < $minLength) {
         return [
             'valid' => false,
@@ -65,8 +66,29 @@ function validatePassword($password, $minLength = 8) {
         ];
     }
     
-    // Note : On accepte TOUS les caractères dans le mot de passe
-    // car il sera hashé (password_hash) et jamais affiché
+    // Vérifier la présence d'au moins une majuscule
+    if (!preg_match('/[A-Z]/', $password)) {
+        return [
+            'valid' => false,
+            'error' => "Le mot de passe doit contenir au moins une majuscule"
+        ];
+    }
+    
+    // Vérifier la présence d'au moins une minuscule
+    if (!preg_match('/[a-z]/', $password)) {
+        return [
+            'valid' => false,
+            'error' => "Le mot de passe doit contenir au moins une minuscule"
+        ];
+    }
+    
+    // Vérifier la présence d'au moins un chiffre
+    if (!preg_match('/[0-9]/', $password)) {
+        return [
+            'valid' => false,
+            'error' => "Le mot de passe doit contenir au moins un chiffre"
+        ];
+    }
     
     return ['valid' => true, 'error' => null];
 }
